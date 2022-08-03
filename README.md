@@ -1,5 +1,5 @@
 # ion-statbot
-Telegram statistics and 2-step doorbell captcha bot for ?? [osmosis.zone](https://osmosis.zone) by ? [CryptoCrew Validators](https://ccvalidators.com)
+Telegram statistics and 2-step doorbell captcha bot for :test_tube: [osmosis.zone](https://osmosis.zone) by :white_check_mark: [CryptoCrew Validators](https://ccvalidators.com)
 
 admin: `@clemensg` (telegram)
 
@@ -22,6 +22,7 @@ admin: `@clemensg` (telegram)
 `/aprtoapy $apr`					| calculate APY for given APR					|
 
 `coming in v2.1`
+| -------------- command -------------- | ---------------- description ---------------- |
 | ------------------------------------- | --------------------------------------------- |
 `/chart $type $symbol/$pool $timeframe` | charttypes: price, pool, osmosis				|
 `/validators`							| print validator stats							|
