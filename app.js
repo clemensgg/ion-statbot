@@ -108,6 +108,7 @@ bot.on('message', async (msg) => {
     }
     // respond to botcommands
     else if (msg.hasOwnProperty('entities')) {
+        msg.text = msg.text.toLowerCase();
         if (msg.entities[0].type == 'bot_command' && msg.text.slice(0, 1) == '/') {
             if (msg.text.includes('@')) {
                 msg.text = msg.text.split('@')[0];
@@ -203,14 +204,14 @@ bot.onText(/\#/, async (msg) => {
                     if (adm) {
                         res = await generateSupportCommandAnswer(msg);
                     }
-                    if (res.pic) {
-                        await bot.sendPhoto(msg.chat.id, res.pic, res.tgOptions);
-                    }
-                    else {
-                        if (res.text) {
-                            await bot.sendMessage(msg.chat.id, res.text, res.tgOptions);
-                        }
-                    }
+                }
+            }
+            if (res.pic) {
+                await bot.sendPhoto(msg.chat.id, res.pic, res.tgOptions);
+            }
+            else {
+                if (res.text) {
+                    await bot.sendMessage(msg.chat.id, res.text, res.tgOptions);
                 }
             }
         }

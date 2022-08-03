@@ -25,7 +25,11 @@ async function resolveOsmoStakingStats() {
             totalBonded = totalBonded + parseInt(validator.delegator_shares);
         }
     });
+    let lastBlock = await fetchOsmoLCD('/blocks/latest');
+    lastBlock = lastBlock.block;
     return {
+        "latestBlockHeight": lastBlock.header.height,
+        "latestBlockTime": new Date(lastBlock.header.time).toISOString(),
         "numBondedValidators": totalVals,
         "totalBondedOsmo": totalBonded,
         "osmoCirculatingSupply": osmoSupply,

@@ -20,8 +20,14 @@ const emoji = {
     "link": "\u{1F517}"
 }
 
-// Volume (-24h): $11.9M (?5.22 %) 
-// Liquidity(-24h): +$789.8K (?0.42 %)
+function secondsToString(seconds) {
+    var numdays = Math.floor((seconds % 31536000) / 86400);
+    var numhours = Math.floor(((seconds % 31536000) % 86400) / 3600);
+    var numminutes = Math.floor((((seconds % 31536000) % 86400) % 3600) / 60);
+    var numseconds = (((seconds % 31536000) % 86400) % 3600) % 60;
+    return numdays + "d " + numhours.toLocaleString('en-US', { minimumIntegerDigits: 2, useGrouping: false }) + ":" + numminutes.toLocaleString('en-US', { minimumIntegerDigits: 2, useGrouping: false }) + ":" + numseconds.toLocaleString('en-US', { minimumIntegerDigits: 2, maximumFractionDigits: 0, useGrouping: false });
+
+}
 
 function getFloatTextSymbol(number) {
     if (number < 0) return emoji.arrowDownSimple;
@@ -168,14 +174,14 @@ function getTopRatedPools(apr_all, poolsData) {
             poolsData.forEach((pool) => {
                 if (pool.id == pools[i].pool_id) {
                     pool.forEach((token) => {
-                        tokens = tokens + token.symbol + " / ";
+                        tokens = tokens + token.symbol + "/";
                     });
                 }
             });
-            tokens = tokens.slice(0, -3);
+            tokens = tokens.slice(0, -1);
             t.cell('Pool', pools[i].pool_id);
             t.cell('Tokens', tokens);
-            t.cell('Total APR', parseFloat(pools[i].total_apr).toFixed(1) + "%");
+            t.cell('APR', parseFloat(pools[i].total_apr).toFixed(1) + "%");
             t.newRow();
         }
         return t.toString();
@@ -198,9 +204,18 @@ function generateBotCommandAnswer(msg, osmoData, stakingData) {
             break;
         }
         case '/info': case '/start': case '/commands': case '/help': {
-            text = '<b>@osmosis_statbot by CryptoCrew Validators</b>\n\navailable commands:\n<code>/staking</code> - osmosis staking stats & apr/apy\n<code>/tokens</code> - list supported tokens\n ' +
-                '<code>/tokenname</code> - stats for specific token\n<code>/pool #poolnumber</code> - stats for specific pool\n<code>/osmosis</code> - osmosis.zone total statistics\n<code>/ibc</code> - ibc channel status (congested channels)</code>\n<code>/apr</code> - list highest apr pools & staking apr</code>\n<code>/aprtoapy</code> - list highest apr pools & staking apr</code>\n\n' +
-                'datasources: <code>Imperator, OsmosisLDC</code>\nadmin: @clemensg\n\n' + emoji.checkmark + ' <a href="' + config.ccStakeWithUsUrl + '">stake with CryptoCrew Validators</a>';
+            text = `<b>@osmosis_statbot by CryptoCrew Validators</b>\n
+available commands:
+<code>/osmosis</code> - osmosis.zone total statistics
+<code>/ibc</code> - ibc channel status (congested channels)
+<code>/apr</code> - list highest apr pools & staking apr
+<code>/staking</code> - osmosis staking stats & apr/apy
+<code>/pool #poolnumber</code> - stats for specific pool
+<code>/tokens</code> - list supported tokens
+<code>/tokenname</code> - stats for specific token
+<code>/aprtoapy</code> - list highest apr pools & staking apr\n
+datasources: <code>Imperator, OsmosisLDC</code>\nadmin: @clemensg\n
+${emoji.fingerShow} stake with ${emoji.checkmark}<a href="${config.ccStakeWithUsUrl}"> CryptoCrew Validators</a>`;
             break;
         }
         case '/staking': {
@@ -214,12 +229,15 @@ function generateBotCommandAnswer(msg, osmoData, stakingData) {
         }
         case '/osmosis': {
             if (stakingData && osmoData) {
+                let lastUpdatedDiffSec = (new Date().getTime() - new Date(stakingData.latestBlockTime).getTime()) / 1000;
                 let liq24h = osmoData.metrics.liquidity_usd * osmoData.metrics.liquidity_usd_24h / 100;
                 let vol24h = osmoData.metrics.volume_24h * osmoData.metrics.volume_24h_change / 100;
                 let osmoChannels = getOsmoIBCchannels(osmoData.ibc);
                 let congestedChannels = getCongestedIBCchannels(osmoChannels);
                 text = `${emoji.testTube}<b> overview - <a href="` + config.osmoLink + `">osmosis.zone</a></b>
-\nTotal tokens: ${osmoData.tokens.length} \nTotal pools: ${osmoData.pools.length}
+\nLast updated block height: ${stakingData.latestBlockHeight}
+<code>(${secondsToString(lastUpdatedDiffSec)} ago</code>)\n
+Total tokens: ${osmoData.tokens.length} \nTotal pools: ${osmoData.pools.length}
 \nLiquidity: ${formatFloat(osmoData.metrics.liquidity_usd)} $\n24h: ${getFloatPrefix(liq24h)}${formatFloat(Math.abs(liq24h))} $ <code>(${getFloatTextSymbol(osmoData.metrics.liquidity_usd_24h)}` + formatFloat(Math.abs(osmoData.metrics.liquidity_usd_24h)) + ` %)</code>`
                 text = text + '\nVolume: ' + formatFloat(osmoData.metrics.volume_24h) + ' $\n24h: ' + getFloatPrefix(vol24h) + formatFloat(Math.abs(vol24h)) + ' $ <code>(' + getFloatTextSymbol(osmoData.metrics.volume_24h_change) + formatFloat(Math.abs(osmoData.metrics.volume_24h_change)) + ' %)</code>'
                 text = text + `\n\nIBC status: ${getIBCstatusEmoji(congestedChannels)}\nTotal active IBC channels: ${osmoChannels.length}\nCongested IBC channels: ${congestedChannels.length}`
@@ -276,7 +294,7 @@ ${emoji.restake} like APY? <a href="https://restake.app">Compound your rewards w
             if (osmoData, stakingData) {
                 text = `${emoji.starDust} <b><a href="` + config.osmoLink + `">osmosis.zone</a> - Rewards</b>`;
                 text = text + '\n\nStaking APR: ' + formatFloat(osmoData.apr_staking) + ' %\nStaking APY: ' + formatFloat(aprApy(osmoData.apr_staking)) + ' %';
-                text = text + `\n\nTop pools:\n<code>` + getTopRatedPools(osmoData.apr_all,osmoData.pools) + `</code>`;
+                text = text + `\n\n<code>` + getTopRatedPools(osmoData.apr_all,osmoData.pools) + `</code>`;
             }
             break;
         }
@@ -284,7 +302,12 @@ ${emoji.restake} like APY? <a href="https://restake.app">Compound your rewards w
             if (params[0]) {
                 let apy = aprApy(params[0]);
                 if (apy) {
-                    text = params[0] + " % APR = " + apy.toFixed(1).toString() + " % APY";
+                    if (params[0].toString().includes('%')) {
+                        text = params[0] + " APR = " + apy.toFixed(1).toString() + " % APY";
+                    }
+                    else {
+                        text = params[0] + " % APR = " + apy.toFixed(1).toString() + " % APY";
+                    }
                 }
                 else text = "sorry, can't calculate APY for value: " + params[0];
             }
@@ -304,7 +327,7 @@ async function generateSupportCommandAnswer(msg) {
         "parse_mode": "HTML"
     };
     supportCommands.forEach((command) => {
-        if (msg.text.includes(command.command)) {
+        if (msg.text == command.command) {
             text = command.text;
             if (command.pic) {
                 httpOptions.caption = text;

@@ -84,6 +84,9 @@ function filterAPRs(apr_all) {
 }
 
 function aprApy(apr) {
+    if (apr.toString().includes('%')) {
+        apr = parseFloat(apr.toString().replace('%', ''));
+    }
     return ((Math.pow((1 + ((apr / 100) / 365)), 365) - 1) * 100);
 }
 
