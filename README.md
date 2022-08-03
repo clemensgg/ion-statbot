@@ -4,29 +4,28 @@ Telegram statistics and 2-step doorbell captcha bot for ?? [osmosis.zone](https:
 admin: `@clemensg` (telegram)
 
 ## datasources: 
-```
 - [Imperator Osmosis REST API](https://api-osmosis.imperator.co)
 - Osmosis LCD [osmojs](https://github.com/osmosis-labs/osmojs)
-```
 
 ## commands:
-```
-active:
-/start /help /commands /info	- print bot info & commands
-/osmosis						- print osmosis.zone total statistics
-/ibc
-/assets /tokens					- print all supported assets
-/$symbol (i.e. /osmo or /atom)	- print asset statstics
-/pool $pool_number				- print pool statistics
-/apr							- list highest apr pools & staking apr
-/staking						- pring staking statistics
-/aprtoapy $apr					- calculate APY for given APR
+`active`
+| ------------ command ------------ | ---------------- description ---------------- |
+| --------------------------------- | --------------------------------------------- |
+`/start /help /commands /info`		| print bot info & commands						|
+`/osmosis`							| print osmosis.zone total statistics			|
+`/ibc`								| print ibc channel status (congested channels)	|
+`/assets /tokens`					| print all supported assets					|
+`/$symbol (i.e. /osmo or /atom)`	| print asset statstics							|
+`/pool $pool_number`				| print pool statistics							|
+`/apr`								| list highest apr pools & staking apr			|
+`/staking`							| pring staking statistics						|
+`/aprtoapy $apr`					| calculate APY for given APR					|
 
-coming in v2.1:
-/chart $type $symbol/$pool $timeframe	- charttypes: price, pool, osmosis
-/validators						- print validator stats
-/validator $moniker/valoperadd	- print validator stats for specific validator
-```
+`coming in v2.1`
+| ------------------------------------- | --------------------------------------------- |
+`/chart $type $symbol/$pool $timeframe` | charttypes: price, pool, osmosis				|
+`/validators`							| print validator stats							|
+`/validator $moniker/valoperadd`		| print validator stats for specific validator	|
 
 ## admin supportcommands
 `#commands` are restricted to admins and are organized on a dedicated google sheet by osmosis.zone staff.
