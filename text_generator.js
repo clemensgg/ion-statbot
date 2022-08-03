@@ -199,7 +199,7 @@ function generateBotCommandAnswer(msg, osmoData, stakingData) {
         }
         case '/info': case '/start': case '/commands': case '/help': {
             text = '<b>@osmosis_statbot by CryptoCrew Validators</b>\n\navailable commands:\n<code>/staking</code> - osmosis staking stats & apr/apy\n<code>/tokens</code> - list supported tokens\n ' +
-                '<code>/tokenname</code> - stats for specific token\n<code>/pool #poolnumber</code> - stats for specific pool\n<code>/price token1 token2</code> - last price for pair\n\n' + 
+                '<code>/tokenname</code> - stats for specific token\n<code>/pool #poolnumber</code> - stats for specific pool\n<code>/osmosis</code> - osmosis.zone total statistics\n<code>/ibc</code> - ibc channel status (congested channels)</code>\n<code>/apr</code> - list highest apr pools & staking apr</code>\n<code>/aprtoapy</code> - list highest apr pools & staking apr</code>\n\n' +
                 'datasources: <code>Imperator, OsmosisLDC</code>\nadmin: @clemensg\n\n' + emoji.checkmark + ' <a href="' + config.ccStakeWithUsUrl + '">stake with CryptoCrew Validators</a>';
             break;
         }

@@ -159,15 +159,21 @@ bot.onText(/\!globalban/, async (msg) => {
     if (msg.hasOwnProperty('reply_to_message')) {
         let text = "";
         if (config.blacklistSourceChat == msg.chat.id) {
-            let isAdmin = await isAdmin(msg.from.id, msg.chat.id);
-            if (isAdmin) {
-                await newGlobalBan(msg);
-                await blacklistIncCounter(msg.chat.id, 'incCounter');
-                bot.banChatMember(msg.chat.id, msg.reply_to_message.from.id)
-                text = "global_banned <code>" + msg.reply_to_message.from.id + "</code>";
+            let adm = await isAdmin(msg.from.id, msg.chat.id);
+            let userToBlacklistIsAdmin = await isAdmin(msg.reply_to_message.from.id, msg.chat.id);
+            if (!userToBlacklistIsAdmin) {
+                if (adm) {
+                    await newGlobalBan(msg);
+                    await blacklistIncCounter(msg.chat.id, 'incCounter');
+                    bot.banChatMember(msg.chat.id, msg.reply_to_message.from.id)
+                    text = "global_banned <code>" + msg.reply_to_message.from.id + "</code>";
+                }
+                else {
+                    text = "<i>admin only!</i>";
+                }
             }
             else {
-                text = "<i>admin only!</i>";
+                text = "<i>cannot restrict other admins!</i>";
             }
         }
         else {
