@@ -203,7 +203,7 @@ function generateBotCommandAnswer(msg, osmoData, stakingData) {
     }
     let text = "";
     switch (command) {
-        case '/echoGroupID': {
+        case '/echogroupid': {
             text = "UserID: " + msg.from.id + "\n\nChatID: " + msg.chat.id
             break;
         }
