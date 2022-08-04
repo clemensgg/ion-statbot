@@ -194,6 +194,7 @@ bot.onText(/\#/, async (msg) => {
     }
     if (msg.hasOwnProperty('entities') && config.supportCommandsActive) {
         if (msg.entities[0].type == 'hashtag') {
+            msg.text = msg.text.toLowerCase();
             if (msg.chat.type == 'private') {
                 res = await generateSupportCommandAnswer(msg);
             }

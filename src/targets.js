@@ -1,5 +1,6 @@
 const config = require('../config.json');
 const { fetchImperator, fetchOsmoLCD, CoinGeckoClient } = require('./clients.js');
+const cgids = require('../coingecko_ids.json');
 const { fixPoolArray, filterAPRs } = require('./helperfunctions.js');
 const { throwError } = require('./errors');
 
@@ -99,32 +100,31 @@ async function runCoinGeckoHealthCheck() {
     return res.data;
 }
 
+//async function fetchCoin(cgid) {
+
+//}
+
 
 async function fetchGeckoData(tokens) {
-    try {
-        var res = await CoinGeckoClient.coins.list();
-    }
-    catch (e) {
-        throwError(e)
-        console.log("Coingecko ERROR!");
-        return false;
-    }
-    res = res.data;
+    let ids = cgids.tokens;
     tokens.forEach((token) => {
-        let isGecko = false;
-        res.forEach((cgtoken) => {
-            if (token.symbol.toLowerCase() == cgtoken.symbol.toLowerCase()) {
-                token.coingecko = {
-                    "id": cgtoken.id,
-                    "name": cgtoken.name
+        ids.forEach((cgtoken) => {
+            if (token.symbol.toLowerCase() == cgtoken.osmo_symbol.toLowerCase()) {
+                if (cgtoken.id) {
+                    token.coingecko = {
+                        "id": cgtoken.id
+                    }
                 }
-                isGecko = true;
             }
         });
-        token.isGecko = isGecko;
-        if (!isGecko) console.log('WARN: no coingecko data found for ' + token.symbol);
+        if (token.hasOwnProperty('coingecko')) {
+            //token = await fetchCoin(token.coingecko.id);
+        }
+        else {
+            console.log('WARN: no coingecko data found for ' + token.symbol);
+        }
     });
-    return res;
+    return tokens;
 }
 
 async function fetchImperatorData() {
