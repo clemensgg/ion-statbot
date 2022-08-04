@@ -9,7 +9,7 @@ admin: `@clemensg` (telegram)
 
 ## commands:
 `active`
-| ------------ command ------------ | ---------------- description ---------------- |
+|  command                          | description                                   |
 | --------------------------------- | --------------------------------------------- |
 `/start /help /commands /info`		| print bot info & commands						|
 `/osmosis`							| print osmosis.zone total statistics			|
@@ -22,7 +22,7 @@ admin: `@clemensg` (telegram)
 `/aprtoapy $apr`					| calculate APY for given APR					|
 
 `coming in v2.1`
-| -------------- command -------------- | ---------------- description ---------------- |
+|  command                          | description                                   |
 | ------------------------------------- | --------------------------------------------- |
 `/chart $type $symbol/$pool $timeframe` | charttypes: price, pool, osmosis				|
 `/validators`							| print validator stats							|
