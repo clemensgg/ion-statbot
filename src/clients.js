@@ -1,4 +1,4 @@
-const config = require('./config.json');
+const config = require('../config.json');
 const { throwError } = require('./errors.js');
 
 const axios = require('axios');

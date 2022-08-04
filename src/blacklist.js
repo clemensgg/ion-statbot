@@ -1,4 +1,4 @@
-const config = require('./config.json');
+const config = require('../config.json');
 const fs = require('fs/promises');
 const { throwError } = require('./errors.js');
 const { cacheGet, cacheSet } = require('./cache.js');

@@ -1,4 +1,4 @@
-const config = require('./config.json');
+const config = require('../config.json');
 const { bot } = require('./bot.js');
 const { cacheGet } = require('./cache.js');
 

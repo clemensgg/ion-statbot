@@ -1,4 +1,4 @@
-const creds = require('./creds.json');
+const creds = require('../creds.json');
 const { gDoc } = require('./clients.js');
 
 async function sheetReadRows() {

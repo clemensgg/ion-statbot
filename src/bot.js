@@ -1,4 +1,4 @@
-const config = require('./config.json');
+const config = require('../config.json');
 const TelegramBot = require('node-telegram-bot-api');
 const bot = new TelegramBot(config.tgBotToken, { polling: true });
 

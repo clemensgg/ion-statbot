@@ -1,4 +1,4 @@
-const config = require('./config.json');
+const config = require('../config.json');
 const { fetchImperator, fetchOsmoLCD, CoinGeckoClient } = require('./clients.js');
 const { fixPoolArray, filterAPRs } = require('./helperfunctions.js');
 const { throwError } = require('./errors');

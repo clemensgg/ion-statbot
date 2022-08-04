@@ -1,4 +1,4 @@
-const config = require('./config.json');
+const config = require('../config.json');
 const { cacheGet } = require('./cache.js');
 const { resolveDec, aprApy, dynamicSort } = require('./helperfunctions.js');
 const Table = require('easy-table');

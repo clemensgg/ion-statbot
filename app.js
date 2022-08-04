@@ -2,33 +2,33 @@
 
 // init config, cache, errors, helperfunctions
 const config = require('./config.json');
-const { cacheGet, cacheSet } = require('./cache.js');
-const { throwError } = require('./errors.js');
-const { isAdmin, isActiveCommand, isAssetCommand, isNewBotChat } = require('./helperfunctions.js');
+const { cacheGet, cacheSet } = require('./src/cache.js');
+const { throwError } = require('./src/errors.js');
+const { isAdmin, isActiveCommand, isAssetCommand, isNewBotChat } = require('./src/helperfunctions.js');
 
 // init updater
-const { intervalCacheData } = require('./update.js');
+const { intervalCacheData } = require('./src/update.js');
 
 // init telegram bot
-const { bot, tgOptions } = require('./bot.js');
+const { bot, tgOptions } = require('./src/bot.js');
 
 // init textGenerator
 const {
     generateBotCommandAnswer,
     generateAssetCommandAnswer,
     generateSupportCommandAnswer
-} = require('./text_generator.js');
+} = require('./src/text_generator.js');
 
 // init joincontrol
-const { joincontrolActive, authA, authB, solveAuth } = require('./joincontrol.js');
+const { joincontrolActive, authA, authB, solveAuth } = require('./src/joincontrol.js');
 var users = [];
 
 // init gobal blacklist
-const { newGlobalBan, checkBlacklist, blacklistSaveNewChat, blacklistIncCounter } = require('./blacklist.js');
+const { newGlobalBan, checkBlacklist, blacklistSaveNewChat, blacklistIncCounter } = require('./src/blacklist.js');
 
 // init autodelete message watchdog
-const { watchdogAutodelete } = require('./watchdog_autodelete');
-const { watchdogBlacklist } = require('./watchdog_blacklist');
+const { watchdogAutodelete } = require('./src/watchdog_autodelete');
+const { watchdogBlacklist } = require('./src/watchdog_blacklist');
 
 // respond to all messages
 bot.on('message', async (msg) => {
