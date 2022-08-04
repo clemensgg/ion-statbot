@@ -40,7 +40,11 @@ async function intervalCacheData() {
             await cacheSet('osmosis', osmosisData);
             let assetcommands = [];
             osmosisData.tokens.forEach((token) => {
-                assetcommands.push('/' + token.symbol.toLowerCase())
+                let symbol = token.symbol.toLowerCase();
+                if (symbol.includes('.')) {
+                    symbol = symbol.replace('.', '_');
+                }
+                assetcommands.push('/' + symbol);
             });
             await cacheSet('assetcommands', assetcommands);
             console.log('> successfully cached Imperator Osmosis Stats. Last update: ' + osmosisData.lastUpdated);
