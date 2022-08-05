@@ -207,7 +207,10 @@ bot.onText(/\#/, async (msg) => {
     }
     if (msg.hasOwnProperty('entities') && config.supportCommandsActive) {
         if (msg.entities[0].type == 'hashtag') {
-            msg.text = msg.text.toLowerCase();
+            msg.text = '#' + msg.text.split('#')[1];
+            if (msg.text.includes(' ')) {
+                msg.text = msg.text.split(' ')[0];
+            }
             if (msg.chat.type == 'private') {
                 res = await generateSupportCommandAnswer(msg);
             }
