@@ -4,7 +4,7 @@
 const config = require('./config.json');
 const { cacheGet, cacheSet } = require('./src/cache.js');
 const { throwError } = require('./src/errors.js');
-const { isAdmin, isActiveCommand, isAssetCommand, isNewBotChat } = require('./src/helperfunctions.js');
+const { isAdmin, isActiveCommand, isAssetCommand, isMe } = require('./src/helperfunctions.js');
 
 // init updater
 const { intervalCacheData } = require('./src/update.js');
@@ -19,60 +19,73 @@ const {
     generateSupportCommandAnswer
 } = require('./src/text_generator.js');
 
-// init joincontrol
-const { joincontrolActive, authA, authB, solveAuth } = require('./src/joincontrol.js');
-var users = [];
-
 // init gobal blacklist
-const { newGlobalBan, checkBlacklist, blacklistSaveNewChat, blacklistIncCounter } = require('./src/blacklist.js');
+const {
+    checkBlacklist,
+    newGlobalBan,
+    blacklistSaveNewChat,
+    blacklistIncCounter,
+    blacklistRemoveChat
+} = require('./src/blacklist.js');
+
+// init joincontrol
+const {
+    joincontrolActive,
+    authA,
+    authB,
+    solveAuth } = require('./src/joincontrol.js');
+var users = [];
 
 // init autodelete message watchdog
 const { watchdogAutodelete } = require('./src/watchdog_autodelete');
 const { watchdogBlacklist } = require('./src/watchdog_blacklist');
 
-// respond to all messages
-bot.on('message', async (msg) => {
-    if (msg.hasOwnProperty('new_chat_members')) {
-        let botNewChat = await isNewBotChat(msg);
-        if (botNewChat) {
-            await blacklistSaveNewChat(msg);
-            return;
+// respond to all the chat member updates...
+bot.on('chat_member', async (msg) => {
+    if (joincontrolActive(msg)) {
+        if (msg.hasOwnProperty('new_chat_members')) {
+            msg.new_chat_members.forEach(async (newMember) => {
+                let botNewChat = await isMe(newMember);
+                if (botNewChat) {
+                    await blacklistSaveNewChat(msg);
+                }
+                else {
+                    enterAuthA(msg, newMember);
+                }
+            });
         }
-        // Joincontrol authstep A
-        if (!botNewChat) {
-            if (joincontrolActive(msg)) {
-                try {
-                    await bot.deleteMessage(msg.chat.id, msg.message_id);
-                }
-                catch (e) {
-                    throwError(e);
-                }
-                // compare golbal blacklist & ban
-                msg.new_chat_members.forEach(async (newMember) => {
-                    let blacklisted = await checkBlacklist(newMember.id);
-                    if (blacklisted) {
-                        await bot.banChatMember(msg.chat.id, newMember.id);
-                        await blacklistIncCounter(msg.chat.id);
+        else {
+            if (msg.hasOwnProperty('new_chat_member')) {
+                if (msg.old_chat_member.status == 'left' && msg.new_chat_member.status == 'member') {
+                    let botNewChat = await isMe(msg.new_chat_member.user);
+                    if (botNewChat) {
+                        await blacklistSaveNewChat(msg);
                     }
                     else {
-                        let user = await authA(newMember, msg.chat.id);
-                        users.push(user);
+                        enterAuthA(msg, msg.new_chat_member.user);
                     }
-                });
+                }
+                if (msg.new_chat_member.status == 'left') {
+                    let botLeftChat = await isMe(msg.new_chat_member.user);
+                    if (botLeftChat) {
+                        await blacklistRemoveChat(msg);
+                    }
+                    await userExit(msg, msg.new_chat_member.user);
+                }
             }
         }
     }
-    else if (msg.hasOwnProperty('left_chat_member')) {
+    return;
+})
+
+// respond to all messages
+bot.on('message', async (msg) => {
+    if (msg.hasOwnProperty('left_chat_member')) {
         if (joincontrolActive(msg)) {
-            try {
-                await bot.deleteMessage(msg.chat.id, msg.message_id);
-            }
-            catch (e) {
-                throwError(e);
-            }
+            await userExit(msg, msg.left_chat_member);
         }
     }
-    else if (!msg.hasOwnProperty('entities')) {
+    if (!msg.hasOwnProperty('entities')) {
         // Joincontrol authstep B
         users.forEach(async (user) => {
             if (user.id == msg.from.id && user.chatid == msg.chat.id) {
@@ -219,6 +232,55 @@ bot.onText(/\#/, async (msg) => {
     }
     return;
 });
+
+// log polling errors
+bot.on('polling_error', (e) => {
+    throwError(e);
+    return;
+});
+
+// userExit must be in main scope
+async function userExit(msg, user) {
+    if (msg.hasOwnProperty('message_id')) {
+        try {
+            await bot.deleteMessage(msg.chat.id, msg.message_id);
+        }
+        catch (e) {
+            throwError(e);
+        }
+    }
+    users.forEach(async (cacheduser, index, arr) => {
+        if (cacheduser.id == user.id) {
+            arr.splice(index, 1);
+        }
+    });
+    console.log('> user exited ID: ' + user.id + ', chat: ' + msg.chat.id);
+    return true;
+}
+
+// authA must be in main scope
+async function enterAuthA(msg, newMember) {
+    // Joincontrol authstep A
+    if (msg.hasOwnProperty('message_id')) {
+        try {
+            await bot.deleteMessage(msg.chat.id, msg.message_id);
+        }
+        catch (e) {
+            throwError(e);
+        }
+    }
+    // compare golbal blacklist & ban
+    let blacklisted = await checkBlacklist(newMember.id);
+    if (blacklisted) {
+        await bot.banChatMember(msg.chat.id, newMember.id);
+        await blacklistIncCounter(msg.chat.id);
+    }
+    else {
+        let user = await authA(newMember, msg.chat.id);
+        users.push(user);
+    }
+    return true;
+}
 
 // watchdog Joincontrol must be in main scope
 async function watchdogJoincontrol() {

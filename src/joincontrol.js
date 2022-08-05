@@ -1,6 +1,7 @@
 const config = require('../config.json');
 const { throwError } = require('./errors.js');
 const { bot, tgOptions } = require('./bot.js');
+const { checkBlacklist } = require('./blacklist.js');
 
 function joincontrolActive(msg) {
     var activeForThisChat = false;

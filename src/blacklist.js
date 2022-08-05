@@ -80,6 +80,21 @@ async function blacklistSaveNewChat(msg) {
     return res;
 }
 
+async function blacklistRemoveChat(msg) {
+    let blacklist = await readBlacklist();
+    blacklist.chats.forEach((chat, index, arr) => {
+        if (msg.chat.id == chat.id) {
+            arr.splice(index, 1);
+        }
+    });
+    await cacheSet('blacklist', blacklist);
+    let res = await writeBlacklist(blacklist);
+    if (res) {
+        console.log('BLACKLIST removed from chat id: ' + msg.chat.id);
+    }
+    return res;
+}
+
 async function blacklistIncCounter(chatid) {
     let blacklist = await readBlacklist();
     blacklist.chats.forEach((chat) => {
@@ -109,6 +124,8 @@ module.exports = {
     writeBlacklist,
     newGlobalBan,
     blacklistSaveNewChat,
+    blacklistRemoveChat,
     blacklistIncCounter,
     blacklistNewAdmin
+
 }

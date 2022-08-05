@@ -13,17 +13,15 @@ async function isAdmin(userid, chatid) {
     return isAdmin;
 }
 
-async function isNewBotChat(msg) {
+async function isMe(newMember) {
     let me = await cacheGet('bot');
     if (!me) {
         me = await bot.getMe();
     }
     let botNewChat = false;
-    msg.new_chat_members.forEach(async (newMember) => {
-        if (newMember.id == me.id) {
-            botNewChat = true;
-        }
-    });
+    if (newMember.id == me.id) {
+        botNewChat = true;
+    }
     return botNewChat;
 }
 
@@ -106,7 +104,7 @@ module.exports = {
     isAdmin,
     isActiveCommand,
     isAssetCommand,
-    isNewBotChat,
+    isMe,
     resolveDec,
     aprApy,
     fixPoolArray,
