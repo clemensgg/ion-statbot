@@ -6,6 +6,7 @@ admin: `@clemensg` (telegram)
 ## datasources: 
 - [Imperator Osmosis REST API](https://api-osmosis.imperator.co)
 - Osmosis LCD [osmojs](https://github.com/osmosis-labs/osmojs)
+- [Coingecko API](https://www.coingecko.com/en/api/documentation)
 
 ## commands:
 `active`
