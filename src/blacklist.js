@@ -67,17 +67,19 @@ async function newGlobalBan(msg) {
 
 async function blacklistSaveNewChat(msg) {
     let blacklist = await readBlacklist();
-    blacklist.chats.push({
-        "id": msg.chat.id,
-        "adm": false,
-        "n": 0,
-    });
-    await cacheSet('blacklist', blacklist);
-    let res = await writeBlacklist(blacklist);
-    if (res) {
-        console.log('BLACKLIST joined new chat! id: ' + msg.chat.id);
+    if (blacklist.chats.findIndex(item => item.id === msg.chat.id) == -1) {
+        blacklist.chats.push({
+            "id": msg.chat.id,
+            "adm": false,
+            "n": 0,
+        });
+        await cacheSet('blacklist', blacklist);
+        let res = await writeBlacklist(blacklist);
+        if (res) {
+            console.log('BLACKLIST joined new chat! id: ' + msg.chat.id);
+        }
     }
-    return res;
+    return true;
 }
 
 async function blacklistRemoveChat(msg) {
