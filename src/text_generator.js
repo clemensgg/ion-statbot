@@ -30,7 +30,7 @@ function secondsToString(seconds) {
 }
 
 function getFloatTextSymbol(number) {
-    if (number = 0) return "";
+    if (number == 0) return "";
     if (number < 0) return emoji.arrowDownSimple;
     if (number > 0) return emoji.arrowUpSimple;
 }

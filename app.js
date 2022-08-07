@@ -121,6 +121,7 @@ bot.on('message', async (msg) => {
     }
     // respond to botcommands
     else if (msg.hasOwnProperty('entities')) {
+        tgOptions.reply_to_message_id = msg.message_id;
         msg.text = msg.text.toLowerCase();
         if (msg.entities[0].type == 'bot_command' && msg.text.slice(0, 1) == '/') {
             if (msg.text.includes('@')) {
@@ -157,6 +158,9 @@ bot.on('message', async (msg) => {
             }
         }
     }
+    if (tgOptions.hasOwnProperty('reply_to_message_id')) {
+        delete tgOptions.reply_to_message_id;
+    }
     return;
 });
 
@@ -179,7 +183,8 @@ bot.onText(/\!globalban/, async (msg) => {
                 if (adm) {
                     await newGlobalBan(msg);
                     await blacklistIncCounter(msg.chat.id, 'incCounter');
-                    bot.banChatMember(msg.chat.id, msg.reply_to_message.from.id)
+                    await bot.banChatMember(msg.chat.id, msg.reply_to_message.from.id);
+                    tgOptions.reply_to_message_id = msg.message_id;
                     text = "global_banned <code>" + msg.reply_to_message.from.id + "</code>";
                 }
                 else {
@@ -193,7 +198,10 @@ bot.onText(/\!globalban/, async (msg) => {
         else {
             text = "<i>the global ban function is an attempt to conquer scammers and can only be triggered by osmosis admins in the osmosis main group</i>";
         }
-        bot.sendMessage(msg.chat.id, text, tgOptions);
+        await bot.sendMessage(msg.chat.id, text, tgOptions);
+    }
+    if (tgOptions.hasOwnProperty('reply_to_message_id')) {
+        delete tgOptions.reply_to_message_id;
     }
     return;
 });
@@ -211,15 +219,16 @@ bot.onText(/\#/, async (msg) => {
             if (msg.text.includes(' ')) {
                 msg.text = msg.text.split(' ')[0];
             }
-            if (msg.chat.type == 'private') {
-                res = await generateSupportCommandAnswer(msg);
-            }
-            else {
+            if (msg.chat.type != 'private') {
                 let adm = await isAdmin(msg.from.id, msg.chat.id);
                 res.text = "<i>tutorial commands are restricted to admins</i>";
                 if (adm) {
                     res = await generateSupportCommandAnswer(msg);
+                    res.tgOptions.reply_to_message_id = msg.message_id;
                 }
+            }
+            else {
+                res = await generateSupportCommandAnswer(msg);
             }
             if (res.pic) {
                 await bot.sendPhoto(msg.chat.id, res.pic, res.tgOptions);
