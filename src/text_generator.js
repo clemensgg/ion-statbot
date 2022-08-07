@@ -30,12 +30,13 @@ function secondsToString(seconds) {
 }
 
 function getFloatTextSymbol(number) {
+    if (number = 0) return "";
     if (number < 0) return emoji.arrowDownSimple;
     if (number > 0) return emoji.arrowUpSimple;
 }
 
 function getFloatPrefix(number) {
-    if (number < 0) return "";
+    if (number <= 0) return "";
     if (number > 0) return "+";
 }
 
@@ -219,8 +220,8 @@ available commands:
 <code>/tokenname</code> - token stats
 <code>/aprtoapy $aprval</code> - calculate apy\n
 datasources:
-<code>ImperatorAPI,
-OsmosisLDC</code>
+Imperator.co API,
+OsmosisLCD, coingecko.com
 admin: @clemensg\n
 ${emoji.fingerShow} stake with ${emoji.checkmark}<a href="${config.ccStakeWithUsUrl}"> CryptoCrew</a>`;
             break;
@@ -230,7 +231,7 @@ ${emoji.fingerShow} stake with ${emoji.checkmark}<a href="${config.ccStakeWithUs
                 let bonded = resolveDec('osmo', stakingData.totalBondedOsmo, osmoData);
                 text = emoji.lock + ' <b> Staking - <a href="` + config.osmoLink + `">osmosis.zone</a></b>\n\nTotal staked: ' + formatFloat(bonded) + ' OSMO\nStaked ratio: ' + formatFloat(stakingData.bondedRatio) + ' %\nTotal active validators: ' + stakingData.numBondedValidators +
                     '\n\nStaking APR: ' + formatFloat(osmoData.apr_staking) + ' %\nStaking APY: ' + formatFloat(aprApy(osmoData.apr_staking)) + ' %' +
-                    '\n\n' + emoji.fingerShow + ' like this bot? <a href="' + config.ccStakeWithUsUrl + '">Stake with CryptoCrew Validators</a>\n' + emoji.restake + ' like APY? <a href="https://restake.app">Compound your rewards with REstake.app</a>';
+                    '\n\n' + emoji.fingerShow + ' <a href="' + config.ccStakeWithUsUrl + '">Stake with CryptoCrew</a>\n' + emoji.restake + ' <a href="https://restake.app">Compound your rewards with REstake.app</a>';
             }
             break;
         }
@@ -250,7 +251,7 @@ Total tokens: ${osmoData.tokens.length} \nTotal pools: ${osmoData.pools.length}
                 text = text + `\n\nIBC status:\nTotal active IBC channels: ${osmoChannels.length}\n${getIBCstatusEmoji(congestedChannels)} Congested IBC channels: ${congestedChannels.length}`
                 if (congestedChannels.length > 0) { text = text + '\n' + emoji.fingerShow + ' send /ibc for more details' }
                 text = text + `\n\nStaked OSMO: ${formatFloat(stakingData.bondedRatio)} %\nTotal active validators: ${stakingData.numBondedValidators}
-Staking APR: ${formatFloat(osmoData.apr_staking)} %\nStaking APY: ${formatFloat(aprApy(osmoData.apr_staking))} %\n\n${emoji.fingerShow} like this bot? <a href="${config.ccStakeWithUsUrl }">Stake with CryptoCrew Validators</a>
+Staking APR: ${formatFloat(osmoData.apr_staking)} %\nStaking APY: ${formatFloat(aprApy(osmoData.apr_staking))} %\n\n${emoji.fingerShow} like this bot? <a href="${config.ccStakeWithUsUrl }">Stake with CryptoCrew</a>
 ${emoji.restake} like APY? <a href="https://restake.app">Compound your rewards with REstake.app</a>`;
             }
             break;
