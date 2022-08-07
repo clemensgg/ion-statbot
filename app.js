@@ -215,12 +215,10 @@ bot.onText(/\#/, async (msg) => {
                 res = await generateSupportCommandAnswer(msg);
             }
             else {
-                if (msg.chat.id == config.osmoMainGroup) {
-                    let adm = await isAdmin(msg.from.id, msg.chat.id);
-                    res.text = "<i>tutorial commands are restricted to admins</i>";
-                    if (adm) {
-                        res = await generateSupportCommandAnswer(msg);
-                    }
+                let adm = await isAdmin(msg.from.id, msg.chat.id);
+                res.text = "<i>tutorial commands are restricted to admins</i>";
+                if (adm) {
+                    res = await generateSupportCommandAnswer(msg);
                 }
             }
             if (res.pic) {
@@ -242,7 +240,7 @@ bot.on('polling_error', (e) => {
     return;
 });
 
-// userExit must be in main scope
+//// userExit must be in main scope
 async function userExit(msg, user) {
     if (msg.hasOwnProperty('message_id')) {
         try {
