@@ -1,4 +1,6 @@
 'use strict';
+// whitelist bot to receive all tg update types
+// https://api.telegram.org/bot<YOUR_BOT_TOKEN>/getUpdates?allowed_updates=["update_id","message","edited_message","channel_post","edited_channel_post","inline_query","chosen_inline_result","callback_query","shipping_query","pre_checkout_query","poll","poll_answer","my_chat_member","chat_member"]
 
 // init config, cache, errors, helperfunctions
 const config = require('./config.json');
@@ -16,15 +18,17 @@ const { bot, tgOptions } = require('./src/bot.js');
 const {
     generateBotCommandAnswer,
     generateAssetCommandAnswer,
-    generateSupportCommandAnswer
+    generateSupportCommandAnswer,
+    generateBlacklistAnswer
 } = require('./src/text_generator.js');
 
 // init gobal blacklist
 const {
     checkBlacklist,
     newGlobalBan,
+    newGlobalUnban,
     blacklistSaveNewChat,
-    blacklistIncCounter,
+    blacklistCounter,
     blacklistRemoveChat
 } = require('./src/blacklist.js');
 
@@ -33,7 +37,8 @@ const {
     joincontrolActive,
     authA,
     authB,
-    solveAuth } = require('./src/joincontrol.js');
+    solveAuth
+} = require('./src/joincontrol.js');
 var users = [];
 
 // init autodelete message watchdog
@@ -42,36 +47,38 @@ const { watchdogBlacklist } = require('./src/watchdog_blacklist');
 
 // respond to all the chat member updates...
 bot.on('chat_member', async (msg) => {
-    if (joincontrolActive(msg)) {
-        if (msg.hasOwnProperty('new_chat_members')) {
-            msg.new_chat_members.forEach(async (newMember) => {
-                let botNewChat = await isMe(newMember);
+    if (msg.hasOwnProperty('new_chat_members')) {
+        msg.new_chat_members.forEach(async (newMember) => {
+            let botNewChat = await isMe(newMember);
+            if (botNewChat) {
+                await blacklistSaveNewChat(msg);
+            }
+            else {
+                if (joincontrolActive(msg)) {
+                    enterAuthA(msg, newMember);
+                }
+            }
+        });
+    }
+    else {
+        if (msg.hasOwnProperty('new_chat_member')) {
+            if (msg.new_chat_member.status == 'member') {
+                let botNewChat = await isMe(msg.new_chat_member.user);
                 if (botNewChat) {
                     await blacklistSaveNewChat(msg);
                 }
                 else {
-                    enterAuthA(msg, newMember);
-                }
-            });
-        }
-        else {
-            if (msg.hasOwnProperty('new_chat_member')) {
-                if (msg.old_chat_member.status == 'left' && msg.new_chat_member.status == 'member') {
-                    let botNewChat = await isMe(msg.new_chat_member.user);
-                    if (botNewChat) {
-                        await blacklistSaveNewChat(msg);
-                    }
-                    else {
+                    if (joincontrolActive(msg)) {
                         enterAuthA(msg, msg.new_chat_member.user);
                     }
                 }
-                if (msg.new_chat_member.status == 'left') {
-                    let botLeftChat = await isMe(msg.new_chat_member.user);
-                    if (botLeftChat) {
-                        await blacklistRemoveChat(msg);
-                    }
-                    await userExit(msg, msg.new_chat_member.user);
+            }
+            if (msg.new_chat_member.status == 'left' || msg.new_chat_member.status == 'kicked') {
+                let botLeftChat = await isMe(msg.new_chat_member.user);
+                if (botLeftChat) {
+                    await blacklistRemoveChat(msg);
                 }
+                await userExit(msg, msg.new_chat_member.user);
             }
         }
     }
@@ -81,8 +88,35 @@ bot.on('chat_member', async (msg) => {
 // respond to all messages
 bot.on('message', async (msg) => {
     if (msg.hasOwnProperty('left_chat_member')) {
+        let botLeftChat = await isMe(msg.left_chat_member);
+        if (botLeftChat) {
+            await blacklistRemoveChat(msg);
+        }
         if (joincontrolActive(msg)) {
-            await userExit(msg, msg.left_chat_member);
+            try {
+                await bot.deleteMessage(msg.chat.id, msg.message_id);
+            }
+            catch (e) {
+                throwError(e);
+            }
+            return;
+        }
+    }
+    if (msg.hasOwnProperty('new_chat_member')) {
+        let botNewChat = await isMe(msg.new_chat_member);
+        if (botNewChat) {
+            await blacklistSaveNewChat(msg);
+            return;
+        }
+        else {
+            if (joincontrolActive(msg)) {
+                try {
+                    await bot.deleteMessage(msg.chat.id, msg.message_id);
+                }
+                catch (e) {
+                    throwError(e);
+                }
+            }
         }
     }
     if (!msg.hasOwnProperty('entities')) {
@@ -128,7 +162,8 @@ bot.on('message', async (msg) => {
                 msg.text = msg.text.split('@')[0];
             }
             let text = "";
-            if (await isActiveCommand(msg.text)) {
+            let isActCmd = await isActiveCommand(msg.text);
+            if (isActCmd) {
                 let osmoData = await cacheGet('osmosis');
                 let stakingData = await cacheGet('staking');
                 if (osmoData && stakingData) {
@@ -137,7 +172,8 @@ bot.on('message', async (msg) => {
                 else text = '<i>database not synced, please try again in a few minutes..</i>';
                 var answer = await bot.sendMessage(msg.chat.id, text, tgOptions);
             }
-            if (await isAssetCommand(msg.text.toLowerCase())) {
+            let isAssCmd = await isAssetCommand(msg.text.toLowerCase())
+            if (isAssCmd) {
                 let osmoData = await cacheGet('osmosis');
                 if (osmoData) {
                     text = generateAssetCommandAnswer(msg, osmoData);
@@ -182,10 +218,12 @@ bot.onText(/\!globalban/, async (msg) => {
             if (!userToBlacklistIsAdmin) {
                 if (adm) {
                     await newGlobalBan(msg);
-                    await blacklistIncCounter(msg.chat.id, 'incCounter');
-                    await bot.banChatMember(msg.chat.id, msg.reply_to_message.from.id);
-                    tgOptions.reply_to_message_id = msg.message_id;
-                    text = "global_banned <code>" + msg.reply_to_message.from.id + "</code>";
+                    let banned = await bot.banChatMember(msg.chat.id, msg.reply_to_message.from.id);
+                    if (banned) {
+                        tgOptions.reply_to_message_id = msg.message_id;
+                        text = 'global_banned <a href="tg://user?id=' + msg.reply_to_message.from.id + '">' + msg.reply_to_message.from.id + '</a>';
+                    }
+                    else text = 'there was a problem trying to ban user <a href="tg://user?id=' + msg.reply_to_message.from.id + '">' + msg.reply_to_message.from.id + '</a>'
                 }
                 else {
                     text = "<i>admin only!</i>";
@@ -197,6 +235,37 @@ bot.onText(/\!globalban/, async (msg) => {
         }
         else {
             text = "<i>the global ban function is an attempt to conquer scammers and can only be triggered by osmosis admins in the osmosis main group</i>";
+        }
+        await bot.sendMessage(msg.chat.id, text, tgOptions);
+    }
+    if (tgOptions.hasOwnProperty('reply_to_message_id')) {
+        delete tgOptions.reply_to_message_id;
+    }
+    return;
+});
+
+bot.onText(/\!blacklist|!unban/, async (msg) => {
+    let adm = await isAdmin(msg.from.id, config.blacklistSourceChat);
+    if (adm) {
+        let text = "";
+        tgOptions.reply_to_message_id = msg.message_id;
+        if (msg.text == '!blacklist') {
+            text = await generateBlacklistAnswer();
+        }
+        if (msg.text.includes('!unban')) {
+            if (msg.text.includes(' ')) {
+                let userid = msg.text.split(' ')[1];
+                let unbanned = await newGlobalUnban(userid);
+                if (unbanned) {
+                    text = 'success! unbanned <a href="tg://user?id=' + userid + '">' + userid + '</a> from all chats.\n\nblacklist updated.';
+                }
+                else {
+                    text = `sorry, can't find user ${userid} on the global blacklist or there was another error`;
+                }
+            }
+            else {
+                text = 'no user_id specified. please use <code>"!unban $id"</code>';
+            }
         }
         await bot.sendMessage(msg.chat.id, text, tgOptions);
     }
@@ -251,14 +320,6 @@ bot.on('polling_error', (e) => {
 
 //// userExit must be in main scope
 async function userExit(msg, user) {
-    if (msg.hasOwnProperty('message_id')) {
-        try {
-            await bot.deleteMessage(msg.chat.id, msg.message_id);
-        }
-        catch (e) {
-            throwError(e);
-        }
-    }
     users.forEach(async (cacheduser, index, arr) => {
         if (cacheduser.id == user.id) {
             arr.splice(index, 1);
@@ -283,7 +344,7 @@ async function enterAuthA(msg, newMember) {
     let blacklisted = await checkBlacklist(newMember.id);
     if (blacklisted) {
         await bot.banChatMember(msg.chat.id, newMember.id);
-        await blacklistIncCounter(msg.chat.id);
+        await blacklistCounter(msg.chat.id, 'inc');
     }
     else {
         let user = await authA(newMember, msg.chat.id);
@@ -349,6 +410,7 @@ async function main() {
             
         setInterval(intervalCacheData, config.pollInterval * 1000);
         intervalCacheData();
+
        return;
     }
 }

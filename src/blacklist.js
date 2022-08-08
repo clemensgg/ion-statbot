@@ -1,10 +1,14 @@
 const config = require('../config.json');
 const fs = require('fs/promises');
+const { bot } = require('./bot.js');
 const { throwError } = require('./errors.js');
 const { cacheGet, cacheSet } = require('./cache.js');
-const { bot } = require('./bot.js');
+const {
+    sheetWriteBlacklistUsers,
+    sheetWriteBlacklistChats,
+} = require('./sheet.js');
 
-async function readBlacklist() {
+async function fsReadBlacklist() {
     let data = null;
     let blacklist = { "blacklist": [], "chats": [] }
     if (config.blacklistFileUrl) {
@@ -15,7 +19,7 @@ async function readBlacklist() {
             throwError(e);
             console.log('> ERROR reading blacklist!');
             console.log('> initializing new blacklist');
-            await writeBlacklist(blacklist);
+            await fsWriteBlacklist(blacklist);
             data = blacklist;
         }
         data = data;
@@ -23,7 +27,7 @@ async function readBlacklist() {
     return data;
 }
 
-async function writeBlacklist(blacklist) {
+async function fsWriteBlacklist(blacklist) {
     try {
         await fs.writeFile(config.blacklistFileUrl, JSON.stringify(blacklist));
     }
@@ -35,99 +39,159 @@ async function writeBlacklist(blacklist) {
     return true;
 }
 
+async function saveBlacklist(blacklist) {
+    let saved = await fsWriteBlacklist(blacklist);
+    if (saved) {
+        if (blacklist.hasOwnProperty('blacklist')) {
+            await sheetWriteBlacklistUsers(blacklist.blacklist);
+        }
+        if (blacklist.hasOwnProperty('chats')) {
+            await sheetWriteBlacklistChats(blacklist.chats);
+        }
+        return true;
+    }
+    return false;
+}
+
 async function checkBlacklist(userid) {
     let blacklist = await cacheGet("blacklist");
     if (!blacklist) {
-        blacklist = await readBlacklist();
+        blacklist = await fsReadBlacklist();
     }
     if (blacklist) {
-        let index = blacklist.blacklist.findIndex(item => item.id === userid);
+        let index = blacklist.blacklist.findIndex(item => item.id == userid.toString());
         if (index > -1) return true;
         else return false;
     }
     return false
-    
 }
 
 async function newGlobalBan(msg) {
-    let blacklist = await readBlacklist();
+    let blacklist = await fsReadBlacklist();
     blacklist.blacklist.push({
         "id": msg.reply_to_message.from.id,
+        "username": msg.reply_to_message.from.username,
+        "first_name": msg.reply_to_message.from.first_name,
+        "last_name": msg.reply_to_message.from.last_name,
         "by": msg.from.id,
         "src": msg.chat.id,
         "ts": new Date().toISOString()
     });
+    blacklist.chats.forEach((chat) => {
+        if (chat.id == msg.chat.id) {
+            chat.n++
+        }
+    });
     await cacheSet('blacklist', blacklist);
-    let res = await writeBlacklist(blacklist);
-    if (res) {
-        console.log('BLACKLIST updated! id: ' + msg.reply_to_message.from.id);
+    let saved = await saveBlacklist(blacklist);
+    if (saved) {
+        console.log('BLACKLIST new global ban user id: ' + msg.reply_to_message.from.id);
+        return true;
     }
-    return res;
+    return false;
+}
+
+async function newGlobalUnban(userid) {
+    let blacklist = await fsReadBlacklist();
+    let unbanned = false
+    blacklist.blacklist.forEach(async (user, index, arr) => {
+        if (user.id == userid) {
+            blacklist.chats.forEach(async (chat) => {
+                await bot.unbanChatMember(chat.id, userid);
+                chat.n--;
+            });
+            arr.splice(index, 1);
+            unbanned = true;
+        }
+    });
+    if (unbanned) {
+        await cacheSet('blacklist', blacklist);
+        let saved = await saveBlacklist(blacklist);
+        if (saved) {
+            console.log('BLACKLIST ubanned user id: ' + userid);
+        }
+    }
+    return unbanned;
 }
 
 async function blacklistSaveNewChat(msg) {
-    let blacklist = await readBlacklist();
-    if (blacklist.chats.findIndex(item => item.id === msg.chat.id) == -1) {
+    let blacklist = await fsReadBlacklist();
+    if (blacklist.chats.findIndex(item => item.id == msg.chat.id.toString()) == -1) {
         blacklist.chats.push({
             "id": msg.chat.id,
             "adm": false,
             "n": 0,
         });
-        await cacheSet('blacklist', blacklist);
-        let res = await writeBlacklist(blacklist);
-        if (res) {
-            console.log('BLACKLIST joined new chat! id: ' + msg.chat.id);
-        }
     }
-    return true;
+    await cacheSet('blacklist', blacklist);
+    let saved = await saveBlacklist(blacklist);
+    if (saved) {
+        console.log('BLACKLIST joined new chat id: ' + msg.chat.id);
+        return true;
+    }
+    return false;
 }
 
 async function blacklistRemoveChat(msg) {
-    let blacklist = await readBlacklist();
+    let blacklist = await fsReadBlacklist();
     blacklist.chats.forEach((chat, index, arr) => {
         if (msg.chat.id == chat.id) {
             arr.splice(index, 1);
         }
     });
     await cacheSet('blacklist', blacklist);
-    let res = await writeBlacklist(blacklist);
-    if (res) {
+    let saved = await saveBlacklist(blacklist);
+    if (saved) {
         console.log('BLACKLIST removed from chat id: ' + msg.chat.id);
+        return true;
     }
-    return res;
+    return false;
 }
 
-async function blacklistIncCounter(chatid) {
-    let blacklist = await readBlacklist();
+async function blacklistCounter(chatid, method) {
+    let blacklist = await fsReadBlacklist();
     blacklist.chats.forEach((chat) => {
         if (chat.id == chatid) {
-            chat.n++;
+            if (method == 'inc') {
+                chat.n++;
+            }
+            else if (method == 'dec') {
+                chat.n--;
+            }
         }
     });
-    let res = await writeBlacklist(blacklist);
-    return res;
+    await cacheSet('blacklist', blacklist);
+    let saved = await saveBlacklist(blacklist);
+    if (saved) {
+        return true;
+    }
+    return false;
 }
 
 async function blacklistNewAdmin(chatid) {
-    let blacklist = await readBlacklist();
+    let blacklist = await fsReadBlacklist();
     blacklist.chats.forEach((chat) => {
         if (chat.id == chatid) {
             chat.adm = true;;
-            console.log('BLACKLIST got promoted to admin in chat: ' + chatid);
         }
     });
-    let res = await writeBlacklist(blacklist);
-    return res;
+    await cacheSet('blacklist', blacklist);
+    let saved = await saveBlacklist(blacklist);
+    if (saved) {
+        console.log(console.log('BLACKLIST got promoted to admin in chat: ' + chatid));
+        return true;
+    }
+    return false;
 }
 
 module.exports = {
+    fsReadBlacklist,
+    saveBlacklist,
     checkBlacklist,
-    readBlacklist,
-    writeBlacklist,
     newGlobalBan,
+    newGlobalUnban,
     blacklistSaveNewChat,
     blacklistRemoveChat,
-    blacklistIncCounter,
+    blacklistCounter,
     blacklistNewAdmin
-
 }

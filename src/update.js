@@ -15,8 +15,8 @@ const {
     fetchGeckoData,
 } = require('./targets.js');
 
-const { readBlacklist } = require('./blacklist.js');
-const { sheetFetchSupportCommands } = require('./supportcommands.js');
+const { fsReadBlacklist, saveBlacklist } = require('./blacklist.js');
+const { sheetFetchSupportCommands } = require('./sheet.js');
 
 // poll Osmosis LCD & Imperator REST, cache data
 async function intervalCacheData() {
@@ -70,9 +70,10 @@ async function intervalCacheData() {
     }
 
     // cache blacklist
-    let blacklist = await readBlacklist();
+    let blacklist = await fsReadBlacklist();
     if (blacklist) {
         await cacheSet('blacklist', blacklist);
+        await saveBlacklist(blacklist);
         console.log('> successfully cached Blacklist');
     }
 

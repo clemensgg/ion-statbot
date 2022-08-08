@@ -3,14 +3,10 @@ const { bot } = require('./bot.js');
 const { cacheGet } = require('./cache.js');
 
 async function isAdmin(userid, chatid) {
-    let isAdmin = false;
     let admins = await bot.getChatAdministrators(chatid);
-    admins.forEach((admin) => {
-        if (userid == admin.user.id) {
-            isAdmin = true;
-        }
-    });
-    return isAdmin;
+    let index = admins.findIndex(admin => admin.user.id === userid);
+    if (index > -1) return true;
+    else return false;
 }
 
 async function isMe(newMember) {

@@ -1,6 +1,7 @@
 const config = require('../config.json');
 const { cacheGet } = require('./cache.js');
 const { resolveDec, aprApy, dynamicSort } = require('./helperfunctions.js');
+const { fsReadBlacklist } = require('./blacklist.js');
 const Table = require('easy-table');
 
 const emoji = {
@@ -209,7 +210,7 @@ function generateBotCommandAnswer(msg, osmoData, stakingData) {
             break;
         }
         case '/info': case '/start': case '/commands': case '/help': {
-            text = `<b>@osmosis_statbot by CryptoCrew</b>\n
+            text = `<b>@osmosis_statbot by ${emoji.checkmark}<a href="${config.ccStakeWithUsUrl}"> CryptoCrew</a></b>\n
 available commands:
 <code>/osmosis</code> - overview
 <code>/ibc</code> - ibc channel stats
@@ -222,8 +223,7 @@ available commands:
 datasources:
 Imperator.co API,
 OsmosisLCD, coingecko.com
-admin: @clemensg\n
-${emoji.fingerShow} stake with ${emoji.checkmark}<a href="${config.ccStakeWithUsUrl}"> CryptoCrew</a>`;
+admin: @clemensg`;
             break;
         }
         case '/staking': {
@@ -394,8 +394,25 @@ Volume 24h: ${formatFloat(token.volume_24h)} $ <code>(${getFloatTextSymbol(token
     return text;
 }
 
+async function generateBlacklistAnswer() {
+    let blacklist = await fsReadBlacklist();
+    let text = 'global_ban blacklist:\n\n';
+    let t = new Table;
+    blacklist.blacklist.forEach((user) => {
+        t.cell('id', '</code><a href="tg://user?id=' + user.id + '">' + user.id + '</a><code>');
+        t.cell('name', user.username);
+        t.cell('1st', user.first_name);
+        t.cell('2nd', user.first_name);
+        t.cell('by', user.by);
+        t.newRow();
+    });
+    text = text + '<code> ' + t.print() + '</code>\nsend <code>!unban $user_id</code> to unban';
+    return text;
+}
+
 module.exports = {
     generateBotCommandAnswer,
     generateAssetCommandAnswer,
-    generateSupportCommandAnswer
+    generateSupportCommandAnswer,
+    generateBlacklistAnswer
 }

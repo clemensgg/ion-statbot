@@ -1,10 +1,11 @@
-const { readBlacklist, blacklistNewAdmin, blacklistIncCounter } = require('./blacklist.js');
+const { fsReadBlacklist, blacklistNewAdmin, blacklistCounter } = require('./blacklist.js');
 const { isAdmin } = require('./helperfunctions.js');
-const { bot } = require('./bot.js');
+const { bot, tgOptions } = require('./bot.js');
+const config = require('../config.json');
 const { cacheGet } = require('./cache.js');
 
 async function watchdogBlacklist() {
-    let blacklist = await readBlacklist();
+    let blacklist = await fsReadBlacklist();
     let me = await cacheGet('bot');
     if (blacklist) {
         blacklist.chats.forEach(async (chat) => {
@@ -15,15 +16,15 @@ async function watchdogBlacklist() {
                     await blacklistNewAdmin(chat.id);
                 }
             }
-            if (chat.adm == true) {
+            if (chat.adm == true && chat.id != config.blacklistSourceChat.toString()) {
                 blacklist.blacklist.forEach(async (user) => {
                     let isMember = await bot.getChatMember(chat.id, user.id);
                     if (isMember.status == 'member') {
                         await bot.banChatMember(chat.id, user.id);
-                        let text = "global_banned <code>" + msg.reply_to_message.from.id + "</code>";
-                        await bot.sendMessage()
-                        console.log('> BLACKLIST banned user ' + user.id + ' from chat ' + chat.id + ' (blacklist source: ' + user.src + " / marked by:" + user.by + ')');
-                        await blacklistIncCounter(chat.id);
+                        let text = 'global_banned <a href="tg://user?id=' + user.id + '">' + user.id + '</a>\n(flagged as malicious by <a href="tg://user?id=' + user.by + '">' + user.by + '</a> in chat <code>' + user.src + '</code>)';
+                        await bot.sendMessage(chat.id, text, tgOptions);
+                        console.log('> BLACKLIST banned user ' + user.id + ' from chat ' + chat.id + ' (source chat: ' + user.src + " / flagged by:" + user.by + ')');
+                        await blacklistCounter(chat.id, 'inc');
                     }
                 });
             }
