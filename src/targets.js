@@ -1,8 +1,9 @@
-const config = require('../config.json');
-const { fetchImperator, fetchOsmoLCD, CoinGeckoClient } = require('./clients.js');
-const cgids = require('../coingecko_ids.json');
-const { fixPoolArray, filterAPRs } = require('./helperfunctions.js');
-const { throwError } = require('./errors');
+import config from '../config.js'
+import cgids from '../coingecko_ids.js';
+
+import { fetchImperator, fetchOsmoLCD, CoinGeckoClient } from './clients.js';
+import { fixPoolArray, filterAPRs } from './helperfunctions.js';
+import { throwError } from './errors.js';
 
 
 async function resolveOsmoStakingStats() {
@@ -140,7 +141,7 @@ async function fetchImperatorData() {
 }
 
 
-module.exports = {
+export {
     runImperatorHealthCheck,
     runOsmoLCDhealthCheck,
     runCoinGeckoHealthCheck,

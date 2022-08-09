@@ -1,22 +1,22 @@
-const { resetErrorCount, getErrorCount } = require('./errors.js');
+import { resetErrorCount, getErrorCount } from './errors.js';
 
-const {
+import {
     cacheSet,
     cacheGetRoundCount,
     cacheIncrementRoundCount
-} = require('./cache.js');
+}from './cache.js';
 
-const {
+import {
     runImperatorHealthCheck,
     runOsmoLCDhealthCheck,
     runCoinGeckoHealthCheck,
     fetchImperatorData,
     resolveOsmoStakingStats,
     fetchGeckoData,
-} = require('./targets.js');
+} from './targets.js';
 
-const { fsReadBlacklist, saveBlacklist } = require('./blacklist.js');
-const { sheetFetchSupportCommands } = require('./sheet.js');
+import { fsReadBlacklist, saveBlacklist } from './blacklist.js';
+import { sheetFetchSupportCommands } from './sheet.js';
 
 // poll Osmosis LCD & Imperator REST, cache data
 async function intervalCacheData() {
@@ -81,6 +81,6 @@ async function intervalCacheData() {
     return;
 }
 
-module.exports = {
+export {
     intervalCacheData
 }

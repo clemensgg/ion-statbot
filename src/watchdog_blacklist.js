@@ -1,8 +1,8 @@
-const { fsReadBlacklist, blacklistNewAdmin, blacklistCounter } = require('./blacklist.js');
-const { isAdmin } = require('./helperfunctions.js');
-const { bot, tgOptions } = require('./bot.js');
-const config = require('../config.json');
-const { cacheGet } = require('./cache.js');
+import config from '../config.js'
+import { fsReadBlacklist, blacklistNewAdmin, blacklistCounter } from './blacklist.js';
+import { isAdmin } from './helperfunctions.js';
+import { bot, tgOptions } from './bot.js';
+import { cacheGet } from './cache.js';
 
 async function watchdogBlacklist() {
     let blacklist = await fsReadBlacklist();
@@ -33,4 +33,4 @@ async function watchdogBlacklist() {
     return;
 }
 
-module.exports = { watchdogBlacklist }
+export { watchdogBlacklist }

@@ -1,5 +1,5 @@
-const creds = require('../creds.json');
-const { gDoc } = require('./clients.js');
+import creds from '../creds.js';
+import { gDoc } from './clients.js';
 
 async function sheetReadCommands() {
     await gDoc.useServiceAccountAuth(creds);
@@ -53,7 +53,7 @@ async function sheetWriteBlacklistChats(blchats) {
     return true;
 }
 
-module.exports = {
+export {
     sheetWriteBlacklistUsers,
     sheetWriteBlacklistChats,
     sheetFetchSupportCommands

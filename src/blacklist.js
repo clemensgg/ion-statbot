@@ -1,12 +1,13 @@
-const config = require('../config.json');
-const fs = require('fs/promises');
-const { bot } = require('./bot.js');
-const { throwError } = require('./errors.js');
-const { cacheGet, cacheSet } = require('./cache.js');
-const {
+import config from '../config.js'
+import fs from 'fs/promises';
+import { bot } from './bot.js';
+import { throwError } from './errors.js';
+import { cacheGet, cacheSet } from './cache.js';
+
+import {
     sheetWriteBlacklistUsers,
     sheetWriteBlacklistChats,
-} = require('./sheet.js');
+} from './sheet.js';
 
 async function fsReadBlacklist() {
     let data = null;
@@ -184,7 +185,7 @@ async function blacklistNewAdmin(chatid) {
     return false;
 }
 
-module.exports = {
+export {
     fsReadBlacklist,
     saveBlacklist,
     checkBlacklist,

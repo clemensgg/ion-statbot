@@ -1,4 +1,4 @@
-const { cacheGet, cacheSet } = require('./cache.js');
+import { cacheGet, cacheSet } from './cache.js';
 
 async function getErrorCount() {
     var errs = await cacheGet('errorCounter');
@@ -37,7 +37,7 @@ async function throwError(e) {
     return;
 }
 
-module.exports = {
+export {
     throwError,
     getErrorCount,
     resetErrorCount

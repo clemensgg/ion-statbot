@@ -1,6 +1,6 @@
-const config = require('../config.json');
-const { bot } = require('./bot.js');
-const { cacheGet } = require('./cache.js');
+import config from '../config.js'
+import { bot } from './bot.js';
+import { cacheGet } from './cache.js';
 
 async function isAdmin(userid, chatid) {
     let admins = await bot.getChatAdministrators(chatid);
@@ -96,7 +96,7 @@ function dynamicSort(property) {
     }
 }
 
-module.exports = {
+export {
     isAdmin,
     isActiveCommand,
     isAssetCommand,

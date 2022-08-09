@@ -1,4 +1,4 @@
-{
+export default {
   "appEndpoint": "https://your-app-endpoint-behind-ssl",
   "sslcert": "/home/ubuntu/.ionbot/certs/cert.pem",
   "blacklistFileUrl": "/home/ubuntu/.ionbot/blacklist/blacklist.json",

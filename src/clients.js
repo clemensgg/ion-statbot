@@ -1,16 +1,16 @@
-const config = require('../config.json');
-const { throwError } = require('./errors.js');
+import config from '../config.js'
+import { throwError } from './errors.js';
 
-const axios = require('axios');
-const { osmosis } = require('osmojs');
+import axios from 'axios';
+import osmosis from 'osmojs';
 
-const CoinGecko = require('coingecko-api');
+import CoinGecko from 'coingecko-api';
 const CoinGeckoClient = new CoinGecko();
 
-const LCDClient = osmosis.gamm.v1beta1.LCDQueryClient;
+const LCDClient = osmosis.osmosis.gamm.v1beta1.LCDQueryClient;
 const osmoClient = new LCDClient({ restEndpoint: config.osmoLCDurl });
 
-const { GoogleSpreadsheet } = require('google-spreadsheet');
+import { GoogleSpreadsheet } from 'google-spreadsheet';
 const gDoc = new GoogleSpreadsheet(config.googleSheetID);
 
 function getImperatorUrl(method, params) {
@@ -62,7 +62,7 @@ async function fetchImperator(method, params) {
 }
 
 
-module.exports = {
+export {
     fetchImperator,
     fetchOsmoLCD,
     CoinGeckoClient,

@@ -1,8 +1,8 @@
-const config = require('../config.json');
-const { cacheGet } = require('./cache.js');
-const { resolveDec, aprApy, dynamicSort } = require('./helperfunctions.js');
-const { fsReadBlacklist } = require('./blacklist.js');
-const Table = require('easy-table');
+import config from '../config.js'
+import { cacheGet } from './cache.js';
+import { resolveDec, aprApy, dynamicSort } from './helperfunctions.js';
+import { fsReadBlacklist } from './blacklist.js';
+import Table from 'easy-table';
 
 const emoji = {
     "fingerShow": "\u{1F449}",
@@ -410,7 +410,7 @@ async function generateBlacklistAnswer() {
     return text;
 }
 
-module.exports = {
+export {
     generateBotCommandAnswer,
     generateAssetCommandAnswer,
     generateSupportCommandAnswer,

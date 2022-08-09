@@ -1,4 +1,4 @@
-{
+export default {
   "type": "service_account",
   "project_id": "your-google-project-id",
   "private_key_id": "your-private-key-id",

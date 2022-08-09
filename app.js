@@ -1,49 +1,51 @@
-'use strict';
 // whitelist bot to receive all tg update types
 // https://api.telegram.org/bot<YOUR_BOT_TOKEN>/getUpdates?allowed_updates=["update_id","message","edited_message","channel_post","edited_channel_post","inline_query","chosen_inline_result","callback_query","shipping_query","pre_checkout_query","poll","poll_answer","my_chat_member","chat_member"]
 
 // init config, cache, errors, helperfunctions
-const config = require('./config.json');
-const { cacheGet, cacheSet } = require('./src/cache.js');
-const { throwError } = require('./src/errors.js');
-const { isAdmin, isActiveCommand, isAssetCommand, isMe } = require('./src/helperfunctions.js');
+import config from './config.js'
+import { cacheGet, cacheSet } from './src/cache.js';
+import { throwError } from './src/errors.js';
+import { isAdmin, isActiveCommand, isAssetCommand, isMe } from './src/helperfunctions.js';
 
 // init updater
-const { intervalCacheData } = require('./src/update.js');
+import { intervalCacheData } from './src/update.js';
 
 // init telegram bot
-const { bot, tgOptions } = require('./src/bot.js');
+import { bot, tgOptions } from './src/bot.js';
 
 // init textGenerator
-const {
+import {
     generateBotCommandAnswer,
     generateAssetCommandAnswer,
     generateSupportCommandAnswer,
     generateBlacklistAnswer
-} = require('./src/text_generator.js');
+} from './src/text_generator.js';
 
 // init gobal blacklist
-const {
+import {
     checkBlacklist,
     newGlobalBan,
     newGlobalUnban,
     blacklistSaveNewChat,
     blacklistCounter,
     blacklistRemoveChat
-} = require('./src/blacklist.js');
+} from './src/blacklist.js';
 
 // init joincontrol
-const {
+import {
     joincontrolActive,
     authA,
     authB,
     solveAuth
-} = require('./src/joincontrol.js');
+} from './src/joincontrol.js';
 var users = [];
 
 // init autodelete message watchdog
-const { watchdogAutodelete } = require('./src/watchdog_autodelete');
-const { watchdogBlacklist } = require('./src/watchdog_blacklist');
+import { watchdogAutodelete } from './src/watchdog_autodelete.js';
+import { watchdogBlacklist } from './src/watchdog_blacklist.js';
+
+// init chartbuilder
+import { generateChart } from './src/charts.js';
 
 // respond to all the chat member updates...
 bot.on('chat_member', async (msg) => {
@@ -396,23 +398,26 @@ async function watchdogJoincontrol() {
 }
 
 async function main() {
-    let initBot = await bot.getMe();
-    if (initBot) {
-        await cacheSet('bot', initBot);
-        console.log(initBot);
+    //let initBot = await bot.getMe();
+    //if (initBot) {
+    //    await cacheSet('bot', initBot);
+    //    console.log(initBot);
 
-        setInterval(watchdogAutodelete, 20000);
-        setInterval(watchdogJoincontrol, 20000);
-        setInterval(watchdogBlacklist, 20000);
-        watchdogAutodelete();
-        watchdogJoincontrol();
-        watchdogBlacklist(),
+    //    setInterval(watchdogAutodelete, 20000);
+    //    setInterval(watchdogJoincontrol, 20000);
+    //    setInterval(watchdogBlacklist, 20000);
+    //    watchdogAutodelete();
+    //    watchdogJoincontrol();
+    //    watchdogBlacklist(),
             
-        setInterval(intervalCacheData, config.pollInterval * 1000);
-        intervalCacheData();
+    //    setInterval(intervalCacheData, config.pollInterval * 1000);
+    //    intervalCacheData();
 
-       return;
-    }
+    //   return;
+    //}
+
+    await generateChart();
+    return
 }
 
 main();

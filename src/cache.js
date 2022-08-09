@@ -1,4 +1,4 @@
-const nodeCache = require("node-cache");
+import nodeCache from 'node-cache';
 const cache = new nodeCache();
 
 async function cacheGet(key) {
@@ -26,7 +26,7 @@ async function cacheIncrementRoundCount() {
     return true;
 }
 
-module.exports = {
+export {
     cacheGet,
     cacheSet,
     cacheGetRoundCount,
