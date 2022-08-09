@@ -367,7 +367,7 @@ async function watchdogJoincontrol() {
                     await bot.deleteMessage(user.chatid, user.msgid);
                 }
                 catch (e) {
-                    throwError(e)
+                    throwError(e);
                 }
             }
             if (user.hasOwnProperty('sticker')) {
@@ -375,20 +375,20 @@ async function watchdogJoincontrol() {
                     await bot.deleteMessage(user.chatid, user.sticker);
                 }
                 catch (e) {
-                    throwError(e)
+                    throwError(e);
                 }
             }
             try {
                 await bot.banChatMember(user.chatid, user.id);
             }
             catch (e) {
-                throwError(e)
+                throwError(e);
             }
             try {
                 await bot.unbanChatMember(user.chatid, user.id);
             }
             catch (e) {
-                throwError(e)
+                throwError(e);
             }
             console.log('> kicked user ' + user.id + ' from chat ' + user.chat + ' (timeout ' + config.joinControl.timeout + ')');
             arr.splice(index, 1);
