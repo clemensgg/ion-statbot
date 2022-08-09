@@ -388,7 +388,7 @@ async function watchdogJoincontrol() {
             catch (e) {
                 throwError(e)
             }
-            console.log('> kicked user ' + user.id + ' from chat ' + user.chat + ' (timeout ' + config.joinControl.timeout + ')');
+            console.log('> kicked user ' + user.id + ' from chat ' + user.chatid + ' (timeout ' + config.joinControl.timeout + ')');
             arr.splice(index, 1);
         }
     });
