@@ -398,23 +398,23 @@ async function watchdogJoincontrol() {
 }
 
 async function main() {
-    //let initBot = await bot.getMe();
-    //if (initBot) {
-    //    await cacheSet('bot', initBot);
-    //    console.log(initBot);
+    let initBot = await bot.getMe();
+    if (initBot) {
+        await cacheSet('bot', initBot);
+        console.log(initBot);
 
-    //    setInterval(watchdogAutodelete, 20000);
-    //    setInterval(watchdogJoincontrol, 20000);
-    //    setInterval(watchdogBlacklist, 20000);
-    //    watchdogAutodelete();
-    //    watchdogJoincontrol();
-    //    watchdogBlacklist(),
+        setInterval(watchdogAutodelete, 20000);
+        setInterval(watchdogJoincontrol, 20000);
+        setInterval(watchdogBlacklist, 20000);
+        watchdogAutodelete();
+        watchdogJoincontrol();
+        watchdogBlacklist(),
             
-    //    setInterval(intervalCacheData, config.pollInterval * 1000);
-    //    intervalCacheData();
+        setInterval(intervalCacheData, config.pollInterval * 1000);
+        intervalCacheData();
 
-    //   return;
-    //}
+       return;
+    }
 
     await generateChart();
     return

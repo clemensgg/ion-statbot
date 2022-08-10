@@ -8,9 +8,9 @@ import { throwError } from './errors.js';
 
 async function resolveOsmoStakingStats() {
     let res = await fetchOsmoLCD('/validatorsets/latest');
-    totalVals = parseInt(res.result.total);
+    let totalVals = parseInt(res.result.total);
     res = await fetchOsmoLCD('/cosmos/bank/v1beta1/supply/uosmo');
-    osmoSupply = parseInt(res.amount.amount);
+    let osmoSupply = parseInt(res.amount.amount);
     let totalBonded = 0;
     let nextKey = "";
     let validators = [];
