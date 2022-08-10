@@ -1,6 +1,8 @@
 // whitelist bot to receive all tg update types
 // https://api.telegram.org/bot<YOUR_BOT_TOKEN>/getUpdates?allowed_updates=["update_id","message","edited_message","channel_post","edited_channel_post","inline_query","chosen_inline_result","callback_query","shipping_query","pre_checkout_query","poll","poll_answer","my_chat_member","chat_member"]
 
+import fs from 'fs/promises';
+
 // init config, cache, errors, helperfunctions
 import config from './config.js'
 import { cacheGet, cacheSet } from './src/cache.js';
@@ -45,7 +47,8 @@ import { watchdogAutodelete } from './src/watchdog_autodelete.js';
 import { watchdogBlacklist } from './src/watchdog_blacklist.js';
 
 // init chartbuilder
-import { generateChart } from './src/charts.js';
+import { generateChart } from './src/chart_generator.js';
+import { fetchImperator } from './src/clients.js';
 
 // respond to all the chat member updates...
 bot.on('chat_member', async (msg) => {
@@ -277,6 +280,63 @@ bot.onText(/\!blacklist|!unban/, async (msg) => {
     return;
 });
 
+const tf = {
+    "5m": {
+        "value": 5
+    },
+    "15m": {
+        "value": 15
+    },
+    "30m": {
+        "value": 30
+    },
+    "1h": {
+        "value": 60
+    },
+    "2h": {
+        "value": 120
+    },
+    "4h": {
+        "value": 240
+    },
+    "12h": {
+        "value": 720
+    },
+    "1d": {
+        "value": 1440
+    },
+    "7d": {
+        "value": 10080
+    },
+    "30d": {
+        "value": 43800
+    }
+}
+
+// charts
+bot.onText(/\/chart/, async (msg) => {
+    let text = "";
+    let command = msg.text.split(' ') 
+    if (command.length == 4) {
+        await bot.sendChatAction(msg.chat.id, 'typing');
+
+        let type = command[1];
+        let symbol = command[2];
+        let timeframe = command[3];
+        let tfval = tf[timeframe].value;
+
+        let ohlc = await fetchImperator('tokens/historical/chart', { "symbol": symbol, "timeframe": tfval });
+
+        let buffer = await generateChart(ohlc);
+        await bot.sendPhoto(msg.chat.id, buffer, tgOptions);
+    }
+    else {
+        text = "use /chart type params timeframe";
+    }
+    return;
+});
+
+
 // supportcommands (admin only)
 bot.onText(/\#/, async (msg) => {
     let res = {
@@ -403,20 +463,19 @@ async function main() {
         await cacheSet('bot', initBot);
         console.log(initBot);
 
-        setInterval(watchdogAutodelete, 20000);
-        setInterval(watchdogJoincontrol, 20000);
-        setInterval(watchdogBlacklist, 20000);
-        watchdogAutodelete();
-        watchdogJoincontrol();
-        watchdogBlacklist(),
+        //setInterval(watchdogAutodelete, 20000);
+        //setInterval(watchdogJoincontrol, 20000);
+        //setInterval(watchdogBlacklist, 20000);
+        //watchdogAutodelete();
+        //watchdogJoincontrol();
+        //watchdogBlacklist(),
             
-        setInterval(intervalCacheData, config.pollInterval * 1000);
-        intervalCacheData();
+        //setInterval(intervalCacheData, config.pollInterval * 1000);
+        //intervalCacheData();
 
        return;
     }
 
-    await generateChart();
     return
 }
 

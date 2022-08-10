@@ -69,13 +69,13 @@ async function intervalCacheData() {
         }
     }
 
-    // cache blacklist
-    let blacklist = await fsReadBlacklist();
-    if (blacklist) {
-        await cacheSet('blacklist', blacklist);
-        await saveBlacklist(blacklist);
-        console.log('> successfully cached Blacklist');
-    }
+    //// cache blacklist
+    //let blacklist = await fsReadBlacklist();
+    //if (blacklist) {
+    //    await cacheSet('blacklist', blacklist);
+    //    await saveBlacklist(blacklist);
+    //    console.log('> successfully cached Blacklist');
+    //}
 
     console.log(new Date().toISOString() + ' Cache round done. Total rounds: ' + round + ' Errors: ' + await getErrorCount());
     return;
