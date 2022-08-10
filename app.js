@@ -1,8 +1,6 @@
 // whitelist bot to receive all tg update types
 // https://api.telegram.org/bot<YOUR_BOT_TOKEN>/getUpdates?allowed_updates=["update_id","message","edited_message","channel_post","edited_channel_post","inline_query","chosen_inline_result","callback_query","shipping_query","pre_checkout_query","poll","poll_answer","my_chat_member","chat_member"]
 
-import fs from 'fs/promises';
-
 // init config, cache, errors, helperfunctions
 import config from './config.js'
 import { cacheGet, cacheSet } from './src/cache.js';
