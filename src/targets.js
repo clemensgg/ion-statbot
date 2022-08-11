@@ -1,15 +1,16 @@
-const config = require('../config.json');
-const { fetchImperator, fetchOsmoLCD, CoinGeckoClient } = require('./clients.js');
-const cgids = require('../coingecko_ids.json');
-const { fixPoolArray, filterAPRs } = require('./helperfunctions.js');
-const { throwError } = require('./errors');
+import config from '../config.js'
+import cgids from '../coingecko_ids.js';
+
+import { fetchImperator, fetchOsmoLCD, CoinGeckoClient } from './clients.js';
+import { fixPoolArray, filterAPRs } from './helperfunctions.js';
+import { throwError } from './errors.js';
 
 
 async function resolveOsmoStakingStats() {
     let res = await fetchOsmoLCD('/validatorsets/latest');
-    totalVals = parseInt(res.result.total);
+    let totalVals = parseInt(res.result.total);
     res = await fetchOsmoLCD('/cosmos/bank/v1beta1/supply/uosmo');
-    osmoSupply = parseInt(res.amount.amount);
+    let osmoSupply = parseInt(res.amount.amount);
     let totalBonded = 0;
     let nextKey = "";
     let validators = [];
@@ -140,7 +141,7 @@ async function fetchImperatorData() {
 }
 
 
-module.exports = {
+export {
     runImperatorHealthCheck,
     runOsmoLCDhealthCheck,
     runCoinGeckoHealthCheck,

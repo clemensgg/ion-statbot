@@ -1,16 +1,16 @@
-const config = require('../config.json');
-const { throwError } = require('./errors.js');
+import config from '../config.js'
+import { throwError } from './errors.js';
 
-const axios = require('axios');
-const { osmosis } = require('osmojs');
+import axios from 'axios';
+import osmosis from 'osmojs';
 
-const CoinGecko = require('coingecko-api');
+import CoinGecko from 'coingecko-api';
 const CoinGeckoClient = new CoinGecko();
 
-const LCDClient = osmosis.gamm.v1beta1.LCDQueryClient;
+const LCDClient = osmosis.osmosis.gamm.v1beta1.LCDQueryClient;
 const osmoClient = new LCDClient({ restEndpoint: config.osmoLCDurl });
 
-const { GoogleSpreadsheet } = require('google-spreadsheet');
+import { GoogleSpreadsheet } from 'google-spreadsheet';
 const gDoc = new GoogleSpreadsheet(config.googleSheetID);
 
 function getImperatorUrl(method, params) {
@@ -23,11 +23,11 @@ function getImperatorUrl(method, params) {
         case 'pools/volume/chart': return url + '/pools/v2/volume/' + params.pool_id + '/chart';
         case 'tokens/all': return url + '/tokens/v2/all';
         case 'tokens/historical/chart': return url + '/tokens/v2/historical/' + params.symbol + '/chart?tf=' + params.timeframe;
-        case 'tokens/liquidity/chart': return url + '/tokens/v2/liquidity/' + params.symbol + '/chart';
-        case 'tokens/volume/chart': return url + '/tokens/v2/volume/' + params.symbol + '/chart';
+        case 'tokens/liquidity/chart': return url + '/tokens/v2/liquidity/' + params.symbol + '/chart?tf=' + params.timeframe;
+        case 'tokens/volume/chart': return url + '/tokens/v2/volume/' + params.symbol + '/chart?tf=' + params.timeframe;
         case 'metrics': return url + '/overview/v1/metrics';
-        case 'liquidity/historical/chart': return url + 'liquidity/v2/historical/chart';
-        case 'volume/historical/chart': return url + 'volume/v2/historical/chart';
+        case 'liquidity/historical/chart': return url + '/liquidity/v2/historical/chart?tf=' + params.timeframe;
+        case 'volume/historical/chart': return url + '/volume/v2/historical/chart?tf=' + params.timeframe;
         case 'apr/staking': return url + '/apr/v2/staking';
         case 'apr/all': return url + '/apr/v2/all';
     }
@@ -62,7 +62,7 @@ async function fetchImperator(method, params) {
 }
 
 
-module.exports = {
+export {
     fetchImperator,
     fetchOsmoLCD,
     CoinGeckoClient,

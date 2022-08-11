@@ -1,7 +1,6 @@
-const config = require('../config.json');
-const { throwError } = require('./errors.js');
-const { bot, tgOptions } = require('./bot.js');
-const { checkBlacklist } = require('./blacklist.js');
+import config from '../config.js'
+import { throwError } from './errors.js';
+import { bot, tgOptions } from './bot.js';
 
 function joincontrolActive(msg) {
     var activeForThisChat = false;
@@ -141,7 +140,7 @@ function keyboardYesNo(userid) {
     return keyboard;
 }
 
-module.exports = {
+export {
     joincontrolActive,
     authA,
     authB,

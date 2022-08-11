@@ -1,6 +1,8 @@
 # Project-specific files
 config.json
 creds.json
+config.js
+creds.js
 ion-statbot.njsproj
 ion-statbot.sln
 

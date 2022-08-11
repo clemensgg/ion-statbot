@@ -1,4 +1,4 @@
-{
+export default {
   "tokens": [
     {
       "osmo_symbol": "AKT",

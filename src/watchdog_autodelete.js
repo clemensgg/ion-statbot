@@ -1,7 +1,7 @@
-const config = require('../config.json');
-const { throwError } = require('./errors.js');
-const { cacheGet, cacheSet } = require('./cache.js');
-const { bot } = require('./bot.js');
+import config from '../config.js'
+import { throwError } from './errors.js';
+import { cacheGet, cacheSet } from './cache.js';
+import { bot } from './bot.js';
 
 async function watchdogAutodelete() {
     let del = await cacheGet('del');
@@ -41,4 +41,4 @@ async function watchdogAutodelete() {
     return;
 }
 
-module.exports = { watchdogAutodelete }
+export { watchdogAutodelete }

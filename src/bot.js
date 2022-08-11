@@ -1,5 +1,5 @@
-const config = require('../config.json');
-const TelegramBot = require('node-telegram-bot-api');
+import config from '../config.js'
+import TelegramBot from 'node-telegram-bot-api';
 const bot = new TelegramBot(config.tgBotToken, { polling: true });
 
 bot.setWebHook(config.appEndpoint, {
@@ -11,7 +11,7 @@ const tgOptions = {
     "parse_mode": "HTML"
 }
 
-module.exports = {
+export {
     bot,
     tgOptions
 }

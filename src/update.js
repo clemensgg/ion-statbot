@@ -1,22 +1,22 @@
-const { resetErrorCount, getErrorCount } = require('./errors.js');
+import { resetErrorCount, getErrorCount } from './errors.js';
 
-const {
+import {
     cacheSet,
     cacheGetRoundCount,
     cacheIncrementRoundCount
-} = require('./cache.js');
+}from './cache.js';
 
-const {
+import {
     runImperatorHealthCheck,
     runOsmoLCDhealthCheck,
     runCoinGeckoHealthCheck,
     fetchImperatorData,
     resolveOsmoStakingStats,
     fetchGeckoData,
-} = require('./targets.js');
+} from './targets.js';
 
-const { fsReadBlacklist, saveBlacklist } = require('./blacklist.js');
-const { sheetFetchSupportCommands } = require('./sheet.js');
+import { fsReadBlacklist, saveBlacklist } from './blacklist.js';
+import { sheetFetchSupportCommands } from './sheet.js';
 
 // poll Osmosis LCD & Imperator REST, cache data
 async function intervalCacheData() {
@@ -26,11 +26,11 @@ async function intervalCacheData() {
     console.log(new Date().toISOString() + ' Polling time! Round ' + round + ' les go...');
 
     // fetch supportcommands from google sheet
-    let supportcommands = await sheetFetchSupportCommands();
-    if (supportcommands) {
-        await cacheSet('sp', supportcommands);
-        console.log('> successfully cached ' + supportcommands.length + ' support commands from google sheet');
-    }
+    //let supportcommands = await sheetFetchSupportCommands();
+    //if (supportcommands) {
+    //    await cacheSet('sp', supportcommands);
+    //    console.log('> successfully cached ' + supportcommands.length + ' support commands from google sheet');
+    //}
 
     // fetch Imperator Osmosis data
     let imperatorHealth = await runImperatorHealthCheck();
@@ -69,18 +69,18 @@ async function intervalCacheData() {
         }
     }
 
-    // cache blacklist
-    let blacklist = await fsReadBlacklist();
-    if (blacklist) {
-        await cacheSet('blacklist', blacklist);
-        await saveBlacklist(blacklist);
-        console.log('> successfully cached Blacklist');
-    }
+    //// cache blacklist
+    //let blacklist = await fsReadBlacklist();
+    //if (blacklist) {
+    //    await cacheSet('blacklist', blacklist);
+    //    await saveBlacklist(blacklist);
+    //    console.log('> successfully cached Blacklist');
+    //}
 
     console.log(new Date().toISOString() + ' Cache round done. Total rounds: ' + round + ' Errors: ' + await getErrorCount());
     return;
 }
 
-module.exports = {
+export {
     intervalCacheData
 }
