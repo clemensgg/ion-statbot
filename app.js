@@ -5,7 +5,7 @@
 import config from './config.js'
 import { cacheGet, cacheSet } from './src/cache.js';
 import { throwError } from './src/errors.js';
-import { isAdmin, isActiveCommand, isAssetCommand, isMe } from './src/helperfunctions.js';
+import { isAdmin, isChartParam, isActiveCommand, isAssetCommand, isMe } from './src/helperfunctions.js';
 
 // init updater
 import { intervalCacheData } from './src/update.js';
@@ -47,6 +47,45 @@ import { watchdogBlacklist } from './src/watchdog_blacklist.js';
 // init chartbuilder
 import { generateChart } from './src/chart_generator.js';
 import { fetchImperator } from './src/clients.js';
+
+// init chart types & timeframes
+const tf = {
+    "5m": {
+        "value": 5
+    },
+    "15m": {
+        "value": 15
+    },
+    "30m": {
+        "value": 30
+    },
+    "1h": {
+        "value": 60
+    },
+    "2h": {
+        "value": 120
+    },
+    "4h": {
+        "value": 240
+    },
+    "12h": {
+        "value": 720
+    },
+    "1d": {
+        "value": 1440
+    },
+    "1w": {
+        "value": 10080
+    },
+    "1M": {
+        "value": 43800
+    }
+}
+const chartTypes = [
+    'price', 'p',
+    'volume', 'v',
+    'liquidity', 'l',
+]
 
 // respond to all the chat member updates...
 bot.on('chat_member', async (msg) => {
@@ -165,6 +204,7 @@ bot.on('message', async (msg) => {
                 msg.text = msg.text.split('@')[0];
             }
             let text = "";
+            let answer = null;
             let isActCmd = await isActiveCommand(msg.text);
             if (isActCmd) {
                 let osmoData = await cacheGet('osmosis');
@@ -173,7 +213,7 @@ bot.on('message', async (msg) => {
                     text = generateBotCommandAnswer(msg, osmoData, stakingData);
                 }
                 else text = '<i>database not synced, please try again in a few minutes..</i>';
-                var answer = await bot.sendMessage(msg.chat.id, text, tgOptions);
+                answer = await bot.sendMessage(msg.chat.id, text, tgOptions);
             }
             let isAssCmd = await isAssetCommand(msg.text.toLowerCase())
             if (isAssCmd) {
@@ -182,7 +222,109 @@ bot.on('message', async (msg) => {
                     text = generateAssetCommandAnswer(msg, osmoData);
                 }
                 else text = '<i>database not synced, please try again in a few minutes..</i>';
-                var answer = await bot.sendMessage(msg.chat.id, text, tgOptions);
+                answer = await bot.sendMessage(msg.chat.id, text, tgOptions);
+            }
+            // entrypoint charts
+            if (msg.text.slice(0, 6).toLowerCase() == '/chart') {
+                let text = "";
+                let pic = null;
+                let command = msg.text.split(' ')
+                let valid = false;
+
+                if (command.length == 4) {
+                    await bot.sendChatAction(msg.chat.id, 'typing');
+                    let type = command[1].toLowerCase();
+                    let symbol = command[2].toLowerCase();
+                    let timeframe = command[3];
+                    let tfval = 0; 
+                    
+                    if (chartTypes.indexOf(type) > -1) {
+                        if (Object.keys(tf).indexOf(timeframe) > -1) {
+                            tfval = tf[timeframe].value;
+                            if (await isChartParam(symbol)) {
+                                if (symbol.includes('_')) {
+                                    symbol = symbol.replace('_', '.')
+                                }
+                                if (type == 'price' || type == 'p') {
+                                    if (symbol != 'overview' && symbol != 'o' && symbol != 'osmosis') {
+                                        let data = await fetchImperator('tokens/historical/chart', { "symbol": symbol, "timeframe": tfval });
+                                        pic = await generateChart(data, type, symbol);
+                                        valid = true;
+                                    }
+                                    else {
+                                        let data = await fetchImperator('tokens/historical/chart', { "symbol": 'osmo', "timeframe": tfval });
+                                        pic = await generateChart(data, type, symbol);
+                                        valid = true;
+                                    }
+                                }
+                                if (type == 'liquidity' || type == 'l') {
+                                    if (symbol != 'overview' && symbol != 'o' && symbol != 'osmosis') {
+                                        let data = await fetchImperator('tokens/liquidity/chart', { "symbol": symbol, "timeframe": tfval });
+                                        pic = await generateChart(data, type, symbol);
+                                        valid = true;
+                                    }
+                                    else {
+                                        let data = await fetchImperator('liquidity/historical/chart', { "symbol": symbol, "timeframe": tfval });
+                                        pic = await generateChart(data, type, symbol);
+                                        valid = true;
+                                    }
+                                }
+                                if (type == 'volume' || type == 'v') {
+                                    if (symbol != 'overview' && symbol != 'o' && symbol != 'osmosis') {
+                                        let data = await fetchImperator('tokens/volume/chart', { "symbol": symbol, "timeframe": tfval });
+                                        pic = await generateChart(data, type, symbol);
+                                        valid = true;
+                                    }
+                                    else {
+                                        let data = await fetchImperator('volume/historical/chart', { "symbol": symbol, "timeframe": tfval });
+                                        pic = await generateChart(data, type, symbol);
+                                        valid = true;
+                                    }
+                                }
+                            }
+                            else {
+                                let assetcommands = await cacheGet('assetcommands');
+                                let allSymbols = "";
+                                if (assetcommands) {
+                                    assetcommands.forEach((asset) => {
+                                        allSymbols = allSymbols + asset.replace('/', '') + ', ';
+                                    });
+                                    allSymbols = allSymbols.slice(0, -2);
+                                    text = "cannot find symbol: " + command[2] + "\n\nAvailable symbols:\n<code>" + allSymbols + '</code>\n\nuse "/chart type symbol timeframe"';
+                                }
+                                else {
+                                    text = '<i>database not synced, please try again in a few minutes..</i>';
+                                }
+                            }
+                        }
+                        else {
+                            let tfs = Object.keys(tf);
+                            let allTfs = ""
+                            tfs.forEach((timeframe) => {
+                                allTfs = allTfs + timeframe + ', ';
+                            });
+                            allTfs = allTfs.slice(0, -2);
+                            text = "don't know timeframe: " + command[3] + "\n\nAvailable timeframes:\n<code>" + allTfs  + '</code>\n\nuse "/chart type symbol timeframe"';
+                        }
+                    }
+                    else {
+                        let allChartTypes = "";
+                        chartTypes.forEach((type) => {
+                            allChartTypes = allChartTypes + type + ', ';
+                        });
+                        allChartTypes = allChartTypes.slice(0, -2);
+                        text = "don't know chart type: " + command[1] + "\n\nAvailable chart types:\n<code>" + allChartTypes + '</code>\n\nuse "/chart type symbol timeframe"';
+                    }
+                }
+                else {
+                    text = 'wrong number of input parameters.\n\nuse "/chart type symbol timeframe"';
+                }
+                if (valid) {
+                    answer = await bot.sendPhoto(msg.chat.id, pic, tgOptions);
+                }
+                else {
+                    answer = await bot.sendMessage(msg.chat.id, text, tgOptions);
+                }
             }
             // mark for autodelete if public group
             if (answer) {
@@ -277,63 +419,6 @@ bot.onText(/\!blacklist|!unban/, async (msg) => {
     }
     return;
 });
-
-const tf = {
-    "5m": {
-        "value": 5
-    },
-    "15m": {
-        "value": 15
-    },
-    "30m": {
-        "value": 30
-    },
-    "1h": {
-        "value": 60
-    },
-    "2h": {
-        "value": 120
-    },
-    "4h": {
-        "value": 240
-    },
-    "12h": {
-        "value": 720
-    },
-    "1d": {
-        "value": 1440
-    },
-    "7d": {
-        "value": 10080
-    },
-    "30d": {
-        "value": 43800
-    }
-}
-
-// charts
-bot.onText(/\/chart/, async (msg) => {
-    let text = "";
-    let command = msg.text.split(' ') 
-    if (command.length == 4) {
-        await bot.sendChatAction(msg.chat.id, 'typing');
-
-        let type = command[1];
-        let symbol = command[2];
-        let timeframe = command[3];
-        let tfval = tf[timeframe].value;
-
-        let ohlc = await fetchImperator('tokens/historical/chart', { "symbol": symbol, "timeframe": tfval });
-
-        let buffer = await generateChart(ohlc);
-        await bot.sendPhoto(msg.chat.id, buffer, tgOptions);
-    }
-    else {
-        text = "use /chart type params timeframe";
-    }
-    return;
-});
-
 
 // supportcommands (admin only)
 bot.onText(/\#/, async (msg) => {
@@ -461,15 +546,15 @@ async function main() {
         await cacheSet('bot', initBot);
         console.log(initBot);
 
-        //setInterval(watchdogAutodelete, 20000);
-        //setInterval(watchdogJoincontrol, 20000);
-        //setInterval(watchdogBlacklist, 20000);
-        //watchdogAutodelete();
-        //watchdogJoincontrol();
-        //watchdogBlacklist(),
+        setInterval(watchdogAutodelete, 20000);
+        setInterval(watchdogJoincontrol, 20000);
+        setInterval(watchdogBlacklist, 20000);
+        watchdogAutodelete();
+        watchdogJoincontrol();
+        watchdogBlacklist(),
             
-        //setInterval(intervalCacheData, config.pollInterval * 1000);
-        //intervalCacheData();
+        setInterval(intervalCacheData, config.pollInterval * 1000);
+        intervalCacheData();
 
        return;
     }

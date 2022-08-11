@@ -26,11 +26,11 @@ async function intervalCacheData() {
     console.log(new Date().toISOString() + ' Polling time! Round ' + round + ' les go...');
 
     // fetch supportcommands from google sheet
-    let supportcommands = await sheetFetchSupportCommands();
-    if (supportcommands) {
-        await cacheSet('sp', supportcommands);
-        console.log('> successfully cached ' + supportcommands.length + ' support commands from google sheet');
-    }
+    //let supportcommands = await sheetFetchSupportCommands();
+    //if (supportcommands) {
+    //    await cacheSet('sp', supportcommands);
+    //    console.log('> successfully cached ' + supportcommands.length + ' support commands from google sheet');
+    //}
 
     // fetch Imperator Osmosis data
     let imperatorHealth = await runImperatorHealthCheck();

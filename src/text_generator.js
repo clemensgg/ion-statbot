@@ -1,25 +1,17 @@
 import config from '../config.js'
 import { cacheGet } from './cache.js';
-import { resolveDec, aprApy, dynamicSort } from './helperfunctions.js';
+import {
+    resolveDec,
+    aprApy,
+    dynamicSort,
+    formatFloat,
+    getFloatPrefix,
+    getFloatTextSymbol,
+    emoji
+} from './helperfunctions.js';
 import { fsReadBlacklist } from './blacklist.js';
 import Table from 'easy-table';
 
-const emoji = {
-    "fingerShow": "\u{1F449}",
-    "lock": "\u{1F512}",
-    "restake": "\u{1F504}",
-    "checkmark": "\u{2705}",
-    "testTube": "\u{1F9EA}",
-    "greenDot": "\u{1F7E2}",
-    "yellowDot": "\u{1F7E1}",
-    "redDot": "\u{1F534}",
-    "arrowUpSimple": "\u{2191}",
-    "arrowDownSimple": "\u{2193}",
-    "atom": "\u{269B}",
-    "ion": "\u{1F9FF}",
-    "starDust": "\u{2728}",
-    "link": "\u{1F517}"
-}
 
 function secondsToString(seconds) {
     var numdays = Math.floor((seconds % 31536000) / 86400);
@@ -28,21 +20,6 @@ function secondsToString(seconds) {
     var numseconds = (((seconds % 31536000) % 86400) % 3600) % 60;
     return numdays + "d " + numhours.toLocaleString('en-US', { minimumIntegerDigits: 2, useGrouping: false }) + ":" + numminutes.toLocaleString('en-US', { minimumIntegerDigits: 2, useGrouping: false }) + ":" + numseconds.toLocaleString('en-US', { minimumIntegerDigits: 2, maximumFractionDigits: 0, useGrouping: false });
 
-}
-
-function getFloatTextSymbol(number) {
-    if (number == 0) return "";
-    if (number < 0) return emoji.arrowDownSimple;
-    if (number > 0) return emoji.arrowUpSimple;
-}
-
-function getFloatPrefix(number) {
-    if (number <= 0) return "";
-    if (number > 0) return "+";
-}
-
-function formatFloat(number) {
-    return number.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 1 });
 }
 
 function getOsmoIBCchannels(ibcData) {
@@ -135,11 +112,11 @@ function getPoolTokenInfos(pool, apr_all) {
     let feeAPR = (pool[0].volume_24h * pool[0].fees.slice(0,-1) * 365) / pool[0].liquidity;
     let text = "Liquidity\n";
     pool.forEach((token) => {
-        text = text + token.symbol + ": " + formatFloat(token.amount) + "\n";
+        text = text + token.symbol + ": " + formatFloat(token.amount, 1) + "\n";
     });
-    text = text + "\nTotal liq: " + formatFloat(pool[0].liquidity) + ` $<code> (${getFloatTextSymbol(pool[0].liquidity_24h_change)}` + formatFloat(Math.abs(pool[0].liquidity_24h_change)) + ` %)</code >
-24h vol: ${formatFloat(pool[0].volume_24h)} $<code> (${getFloatTextSymbol(pool[0].volume_24h_change)}` + formatFloat(Math.abs(pool[0].volume_24h_change)) + ` %)</code>\n
-Fee: ${pool[0].fees.slice(0, -1)} %\nLP fee APY: ${formatFloat(aprApy(feeAPR))} %`
+    text = text + "\nTotal liq: " + formatFloat(pool[0].liquidity, 1) + ` $<code> (${getFloatTextSymbol(pool[0].liquidity_24h_change)}` + formatFloat(Math.abs(pool[0].liquidity_24h_change), 1) + ` %)</code >
+24h vol: ${formatFloat(pool[0].volume_24h, 1)} $<code> (${getFloatTextSymbol(pool[0].volume_24h_change)}` + formatFloat(Math.abs(pool[0].volume_24h_change), 1) + ` %)</code>\n
+Fee: ${pool[0].fees.slice(0, -1)} %\nLP fee APY: ${formatFloat(aprApy(feeAPR), 1)} %`
     let aprList = getPoolAprList(pool, apr_all);
     if (aprList) {
         let t = new Table;
@@ -229,8 +206,8 @@ admin: @clemensg`;
         case '/staking': {
             if (stakingData) {
                 let bonded = resolveDec('osmo', stakingData.totalBondedOsmo, osmoData);
-                text = emoji.lock + ' <b> Staking - <a href="` + config.osmoLink + `">osmosis.zone</a></b>\n\nTotal staked: ' + formatFloat(bonded) + ' OSMO\nStaked ratio: ' + formatFloat(stakingData.bondedRatio) + ' %\nTotal active validators: ' + stakingData.numBondedValidators +
-                    '\n\nStaking APR: ' + formatFloat(osmoData.apr_staking) + ' %\nStaking APY: ' + formatFloat(aprApy(osmoData.apr_staking)) + ' %' +
+                text = emoji.lock + ' <b> Staking - <a href="` + config.osmoLink + `">osmosis.zone</a></b>\n\nTotal staked: ' + formatFloat(bonded, 1) + ' OSMO\nStaked ratio: ' + formatFloat(stakingData.bondedRatio, 2) + ' %\nTotal active validators: ' + stakingData.numBondedValidators +
+                    '\n\nStaking APR: ' + formatFloat(osmoData.apr_staking, 1) + ' %\nStaking APY: ' + formatFloat(aprApy(osmoData.apr_staking), 1) + ' %' +
                     '\n\n' + emoji.fingerShow + ' <a href="' + config.ccStakeWithUsUrl + '">Stake with CryptoCrew</a>\n' + emoji.restake + ' <a href="https://restake.app">Compound your rewards with REstake.app</a>';
             }
             break;
@@ -246,12 +223,12 @@ admin: @clemensg`;
 \nLast updated block height: ${stakingData.latestBlockHeight}
 <code>(${secondsToString(lastUpdatedDiffSec)} ago</code>)\n
 Total tokens: ${osmoData.tokens.length} \nTotal pools: ${osmoData.pools.length}
-\nLiquidity: ${formatFloat(osmoData.metrics.liquidity_usd)} $\n24h: ${getFloatPrefix(liq24h)}${formatFloat(Math.abs(liq24h))} $ <code>(${getFloatTextSymbol(osmoData.metrics.liquidity_usd_24h)}` + Math.abs(osmoData.metrics.liquidity_usd_24h).toFixed(1) + `%)</code>`
-                text = text + '\nVolume: ' + formatFloat(osmoData.metrics.volume_24h) + ' $\n24h: ' + getFloatPrefix(vol24h) + formatFloat(Math.abs(vol24h)) + ' $ <code>(' + getFloatTextSymbol(osmoData.metrics.volume_24h_change) + Math.abs(osmoData.metrics.volume_24h_change).toFixed(1) + '%)</code>'
+\nLiquidity: ${formatFloat(osmoData.metrics.liquidity_usd, 0)} $\n24h: ${getFloatPrefix(liq24h)}${formatFloat(Math.abs(liq24h), 1)} $ <code>(${getFloatTextSymbol(osmoData.metrics.liquidity_usd_24h)}` + Math.abs(osmoData.metrics.liquidity_usd_24h).toFixed(1) + `%)</code>`
+                text = text + '\nVolume: ' + formatFloat(osmoData.metrics.volume_24h, 0) + ' $\n24h: ' + getFloatPrefix(vol24h) + formatFloat(Math.abs(vol24h), 1) + ' $ <code>(' + getFloatTextSymbol(osmoData.metrics.volume_24h_change) + Math.abs(osmoData.metrics.volume_24h_change).toFixed(1) + '%)</code>'
                 text = text + `\n\nIBC status:\nTotal active IBC channels: ${osmoChannels.length}\n${getIBCstatusEmoji(congestedChannels)} Congested IBC channels: ${congestedChannels.length}`
                 if (congestedChannels.length > 0) { text = text + '\n' + emoji.fingerShow + ' send /ibc for more details' }
-                text = text + `\n\nStaked OSMO: ${formatFloat(stakingData.bondedRatio)} %\nTotal active validators: ${stakingData.numBondedValidators}
-Staking APR: ${formatFloat(osmoData.apr_staking)} %\nStaking APY: ${formatFloat(aprApy(osmoData.apr_staking))} %\n\n${emoji.fingerShow} like this bot? <a href="${config.ccStakeWithUsUrl }">Stake with CryptoCrew</a>
+                text = text + `\n\nStaked OSMO: ${formatFloat(stakingData.bondedRatio, 1)} %\nTotal active validators: ${stakingData.numBondedValidators}
+Staking APR: ${formatFloat(osmoData.apr_staking, 1)} %\nStaking APY: ${formatFloat(aprApy(osmoData.apr_staking), 1)} %\n\n${emoji.fingerShow} like this bot? <a href="${config.ccStakeWithUsUrl }">Stake with CryptoCrew</a>
 ${emoji.restake} like APY? <a href="https://restake.app">Compound your rewards with REstake.app</a>`;
             }
             break;
@@ -301,7 +278,7 @@ ${emoji.restake} like APY? <a href="https://restake.app">Compound your rewards w
         case '/apr': case '/rewards': {
             if (osmoData, stakingData) {
                 text = `${emoji.starDust}<b> Rewards - <a href="` + config.osmoLink + `">osmosis.zone</a></b>`;
-                text = text + '\n\nStaking APR: ' + formatFloat(osmoData.apr_staking) + ' %\nStaking APY: ' + formatFloat(aprApy(osmoData.apr_staking)) + ' %';
+                text = text + '\n\nStaking APR: ' + formatFloat(osmoData.apr_staking, 1) + ' %\nStaking APY: ' + formatFloat(aprApy(osmoData.apr_staking), 1) + ' %';
                 text = text + `\n\n<code>` + getTopRatedPools(osmoData.apr_all,osmoData.pools) + `</code>`;
             }
             break;
@@ -381,14 +358,14 @@ function generateAssetCommandAnswer(msg, osmoData) {
         if (token.symbol.toLowerCase() == symbol) {
             text = text = `${emoji.link}<b> ${token.symbol} </b> - ${token.name}\n\n`
             if (token.price >= 0.1) {
-                text = text + `Last Price: ${formatFloat(token.price)}`
+                text = text + `Last Price: ${formatFloat(token.price, 2)}`
             }
             else {
                 text = text + `Last Price: ${token.price}`
             }
-            text = text + ` $ <code>(${getFloatTextSymbol(token.price_24h_change)}` + formatFloat(Math.abs(token.price_24h_change)) + ` %)</code >
-Liquidity: ${formatFloat(token.liquidity)} $
-Volume 24h: ${formatFloat(token.volume_24h)} $ <code>(${getFloatTextSymbol(token.volume_24h_change)}` + formatFloat(Math.abs(token.volume_24h_change)) + ` %)</code>`
+            text = text + ` $ <code>(${getFloatTextSymbol(token.price_24h_change)}` + formatFloat(Math.abs(token.price_24h_change), 1) + ` %)</code >
+Liquidity: ${formatFloat(token.liquidity, 1)} $
+Volume 24h: ${formatFloat(token.volume_24h, 1)} $ <code>(${getFloatTextSymbol(token.volume_24h_change)}` + formatFloat(Math.abs(token.volume_24h_change), 1) + ` %)</code>`
         }
     });
     return text;

@@ -2,6 +2,23 @@ import config from '../config.js'
 import { bot } from './bot.js';
 import { cacheGet } from './cache.js';
 
+const emoji = {
+    "fingerShow": "\u{1F449}",
+    "lock": "\u{1F512}",
+    "restake": "\u{1F504}",
+    "checkmark": "\u{2705}",
+    "testTube": "\u{1F9EA}",
+    "greenDot": "\u{1F7E2}",
+    "yellowDot": "\u{1F7E1}",
+    "redDot": "\u{1F534}",
+    "arrowUpSimple": "\u{2191}",
+    "arrowDownSimple": "\u{2193}",
+    "atom": "\u{269B}",
+    "ion": "\u{1F9FF}",
+    "starDust": "\u{2728}",
+    "link": "\u{1F517}"
+}
+
 async function isAdmin(userid, chatid) {
     let admins = await bot.getChatAdministrators(chatid);
     let index = admins.findIndex(admin => admin.user.id === userid);
@@ -39,6 +56,24 @@ async function isAssetCommand(text) {
         }
     }
     else return false;
+}
+
+async function isChartParam(text) {
+    if (text.toUpperCase() == 'O' || text.toUpperCase() == 'OVERVIEW' || text.toUpperCase() == 'OSMOSIS') {
+        return true;
+    }
+    let assetCommands = await cacheGet("assetcommands");
+    if (assetCommands) {
+        let assets = []
+        assetCommands.forEach((command) => {
+            assets.push(command.toUpperCase().replace('/', ''));
+        });
+        if (assets.indexOf(text.toUpperCase()) > -1) {
+            return true;
+        }
+        else return false;
+    }
+    return false;
 }
 
 function resolveDec(symbol, amount, osmoData) {
@@ -96,8 +131,32 @@ function dynamicSort(property) {
     }
 }
 
+function countDecimals(value) {
+    if ((value % 1) != 0)
+        return value.toString().split(".")[1].length;
+    return 0;
+};
+
+function getFloatTextSymbol(number) {
+    if (number == 0) return "";
+    if (number < 0) return emoji.arrowDownSimple;
+    if (number > 0) return emoji.arrowUpSimple;
+}
+
+function getFloatPrefix(number) {
+    if (number == 0) return "";
+    if (number < 0) return "-";
+    if (number > 0) return "+";
+}
+
+function formatFloat(number, decimals) {
+    return Math.abs(number).toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: decimals });
+}
+
 export {
+    emoji,
     isAdmin,
+    isChartParam,
     isActiveCommand,
     isAssetCommand,
     isMe,
@@ -105,5 +164,9 @@ export {
     aprApy,
     fixPoolArray,
     filterAPRs,
-    dynamicSort
+    dynamicSort,
+    countDecimals,
+    getFloatTextSymbol,
+    getFloatPrefix,
+    formatFloat
 }
