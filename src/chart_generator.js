@@ -128,6 +128,7 @@ async function renderImage(data, type, symbol) {
 		});
 	}
 	else {
+		mainval = "Osmosis - overview"
 		htmla1 = "$" + formatFloat(osmoData.metrics.liquidity_usd, 0);
 		htmlc1 = getFloatTextSymbol(osmoData.metrics.liquidity_usd_24h) + ' ' + formatFloat(osmoData.metrics.liquidity_usd_24h, 1) + "%";
 		changeCol1 = getCol(osmoData.metrics.liquidity_usd_24h);
