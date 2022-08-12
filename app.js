@@ -473,7 +473,6 @@ bot.onText(/\#/, async (msg) => {
     }
     if (msg.hasOwnProperty('entities') && config.supportCommandsActive) {
         if (msg.entities[0].type == 'hashtag') {
-            res.tgOptions.reply_to_message_id = msg.message_id;
             msg.text = '#' + msg.text.split('#')[1];
             if (msg.text.includes(' ')) {
                 msg.text = msg.text.split(' ')[0];
@@ -488,6 +487,7 @@ bot.onText(/\#/, async (msg) => {
             else {
                 res = await generateSupportCommandAnswer(msg);
             }
+            res.tgOptions.reply_to_message_id = msg.message_id;
             if (res.pic) {
                 await bot.sendPhoto(msg.chat.id, res.pic, res.tgOptions);
             }
