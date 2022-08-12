@@ -469,7 +469,7 @@ bot.onText(/\#/, async (msg) => {
     let res = {
         "text": "",
         "pic": "",
-        "tgOptions": ""
+        "tgOptions": {}
     }
     if (msg.hasOwnProperty('entities') && config.supportCommandsActive) {
         if (msg.entities[0].type == 'hashtag') {
