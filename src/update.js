@@ -26,11 +26,11 @@ async function intervalCacheData() {
     console.log(new Date().toISOString() + ' Polling time! Round ' + round + ' les go...');
 
     // fetch supportcommands from google sheet
-    //let supportcommands = await sheetFetchSupportCommands();
-    //if (supportcommands) {
-    //    await cacheSet('sp', supportcommands);
-    //    console.log('> successfully cached ' + supportcommands.length + ' support commands from google sheet');
-    //}
+    let supportcommands = await sheetFetchSupportCommands();
+    if (supportcommands) {
+        await cacheSet('sp', supportcommands);
+        console.log('> successfully cached ' + supportcommands.length + ' support commands from google sheet');
+    }
 
     // fetch Imperator Osmosis data
     let imperatorHealth = await runImperatorHealthCheck();
@@ -69,13 +69,13 @@ async function intervalCacheData() {
         }
     }
 
-    //// cache blacklist
-    //let blacklist = await fsReadBlacklist();
-    //if (blacklist) {
-    //    await cacheSet('blacklist', blacklist);
-    //    await saveBlacklist(blacklist);
-    //    console.log('> successfully cached Blacklist');
-    //}
+    // cache blacklist
+    let blacklist = await fsReadBlacklist();
+    if (blacklist) {
+        await cacheSet('blacklist', blacklist);
+        await saveBlacklist(blacklist);
+        console.log('> successfully cached Blacklist');
+    }
 
     console.log(new Date().toISOString() + ' Cache round done. Total rounds: ' + round + ' Errors: ' + await getErrorCount());
     return;
