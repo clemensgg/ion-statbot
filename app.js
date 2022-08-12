@@ -381,9 +381,9 @@ bot.on('message', async (msg) => {
                 }
             }
         }
-    }
-    if (tgOptions.hasOwnProperty('reply_to_message_id')) {
-        delete tgOptions.reply_to_message_id;
+        if (tgOptions.hasOwnProperty('reply_to_message_id')) {
+            delete tgOptions.reply_to_message_id;
+        }
     }
     return;
 });
