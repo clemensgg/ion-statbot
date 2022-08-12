@@ -117,6 +117,12 @@ async function renderImage(data, type, symbol) {
 					prec = -Math.floor(Math.log10(token.price) + 1) + 3;
                 }
 				mainval = symbol.toUpperCase() + ': $' + formatFloat(token.price, prec);
+				if (type == 'l' || type == 'liquidity') {
+					mainval = 'Liquidity: $' + formatFloat(token.liquidity, 0);
+				}
+				if (type == 'v' || type == 'volume') {
+					mainval = 'Volume: $' + formatFloat(token.volume_24h, 0);
+				}
 				htmla1 = '$' + formatFloat(token.liquidity, 0);
 				htmla2 = '$' + formatFloat(token.volume_24h, 0);
 				htmlc2 = getFloatTextSymbol(token.volume_24h_change) + ' ' + formatFloat(token.volume_24h_change, 1) + "%";
