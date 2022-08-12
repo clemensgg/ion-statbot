@@ -189,14 +189,15 @@ function generateBotCommandAnswer(msg, osmoData, stakingData) {
         case '/info': case '/start': case '/commands': case '/help': {
             text = `<b>@osmosis_statbot by ${emoji.checkmark}<a href="${config.ccStakeWithUsUrl}"> CryptoCrew</a></b>\n
 available commands:
-<code>/osmosis</code> - overview
-<code>/ibc</code> - ibc channel stats
-<code>/apr</code> - list top pools & staking apr
-<code>/staking</code> - staking stats
-<code>/pool #poolnr</code> - pool stats
-<code>/tokens</code> - supported tokens
-<code>/tokenname</code> - token stats
-<code>/aprtoapy $aprval</code> - calculate apy\n
+/chart <code>type symbol timeframe</code> - charts
+/osmosis - overview
+/ibc - ibc channel stats
+/apr - list top pools & staking apr
+/staking - staking stats
+/pool <code>poolnr</code> - pool stats
+/tokens - supported tokens
+/tokenname - token stats
+/aprtoapy <code>aprval</code> - calculate apy\n
 datasources:
 Imperator.co API,
 OsmosisLCD, coingecko.com
