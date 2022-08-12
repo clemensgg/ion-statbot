@@ -23,11 +23,11 @@ function getImperatorUrl(method, params) {
         case 'pools/volume/chart': return url + '/pools/v2/volume/' + params.pool_id + '/chart';
         case 'tokens/all': return url + '/tokens/v2/all';
         case 'tokens/historical/chart': return url + '/tokens/v2/historical/' + params.symbol + '/chart?tf=' + params.timeframe;
-        case 'tokens/liquidity/chart': return url + '/tokens/v2/liquidity/' + params.symbol + '/chart?tf=' + params.timeframe;
-        case 'tokens/volume/chart': return url + '/tokens/v2/volume/' + params.symbol + '/chart?tf=' + params.timeframe;
+        case 'tokens/liquidity/chart': return url + '/tokens/v2/liquidity/' + params.symbol + '/chart';
+        case 'tokens/volume/chart': return url + '/tokens/v2/volume/' + params.symbol + '/chart';
         case 'metrics': return url + '/overview/v1/metrics';
-        case 'liquidity/historical/chart': return url + '/liquidity/v2/historical/chart?tf=' + params.timeframe;
-        case 'volume/historical/chart': return url + '/volume/v2/historical/chart?tf=' + params.timeframe;
+        case 'liquidity/historical/chart': return url + '/liquidity/v2/historical/chart';
+        case 'volume/historical/chart': return url + '/volume/v2/historical/chart';
         case 'apr/staking': return url + '/apr/v2/staking';
         case 'apr/all': return url + '/apr/v2/all';
     }

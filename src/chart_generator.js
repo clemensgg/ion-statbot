@@ -134,7 +134,7 @@ async function renderImage(data, type, symbol) {
 		});
 	}
 	else {
-		mainval = "Overview - osmosis.zone"
+		mainval = "Total stats - osmosis.zone - $OSMO"
 		htmla1 = "$" + formatFloat(osmoData.metrics.liquidity_usd, 0);
 		htmlc1 = getFloatTextSymbol(osmoData.metrics.liquidity_usd_24h) + ' ' + formatFloat(osmoData.metrics.liquidity_usd_24h, 1) + "%";
 		changeCol1 = getCol(osmoData.metrics.liquidity_usd_24h);
@@ -367,14 +367,20 @@ ${script}
     await page.close();
     await browser.close();
 
-    return imageBuffer;
+	if (imageBuffer) {
+		return imageBuffer;
+	}
+	else return false;
 }
 
 async function generateChart(data, type, symbol) {
 	// shorten imperator data array to better fit static mobile output
 	if ((type == 'p' || type == 'price') && data.length > 135) data.splice(0, data.length - 135);
 	const imageBuffer = await renderImage(data, type, symbol);
-    return imageBuffer;
+	if (imageBuffer) {
+		return imageBuffer;
+	}
+	else return false;
 }
 
 export {

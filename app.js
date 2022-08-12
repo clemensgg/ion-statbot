@@ -230,81 +230,121 @@ bot.on('message', async (msg) => {
                 let pic = null;
                 let command = msg.text.split(' ')
                 let valid = false;
-
-                if (command.length == 4) {
-                    await bot.sendChatAction(msg.chat.id, 'typing');
+                let err = false;
+                if (command.length >= 3) {
                     let type = command[1].toLowerCase();
                     let symbol = command[2].toLowerCase();
-                    let timeframe = command[3];
-                    let tfval = 0; 
-                    
                     if (chartTypes.indexOf(type) > -1) {
-                        if (Object.keys(tf).indexOf(timeframe) > -1) {
-                            tfval = tf[timeframe].value;
-                            if (await isChartParam(symbol)) {
-                                if (symbol.includes('_')) {
-                                    symbol = symbol.replace('_', '.')
-                                }
-                                if (type == 'price' || type == 'p') {
-                                    if (symbol != 'overview' && symbol != 'o' && symbol != 'osmosis') {
-                                        let data = await fetchImperator('tokens/historical/chart', { "symbol": symbol, "timeframe": tfval });
-                                        pic = await generateChart(data, type, symbol);
-                                        valid = true;
-                                    }
-                                    else {
-                                        let data = await fetchImperator('tokens/historical/chart', { "symbol": 'osmo', "timeframe": tfval });
-                                        pic = await generateChart(data, type, symbol);
-                                        valid = true;
-                                    }
-                                }
-                                if (type == 'liquidity' || type == 'l') {
-                                    if (symbol != 'overview' && symbol != 'o' && symbol != 'osmosis') {
-                                        let data = await fetchImperator('tokens/liquidity/chart', { "symbol": symbol, "timeframe": tfval });
-                                        pic = await generateChart(data, type, symbol);
-                                        valid = true;
-                                    }
-                                    else {
-                                        let data = await fetchImperator('liquidity/historical/chart', { "symbol": symbol, "timeframe": tfval });
-                                        pic = await generateChart(data, type, symbol);
-                                        valid = true;
-                                    }
-                                }
-                                if (type == 'volume' || type == 'v') {
-                                    if (symbol != 'overview' && symbol != 'o' && symbol != 'osmosis') {
-                                        let data = await fetchImperator('tokens/volume/chart', { "symbol": symbol, "timeframe": tfval });
-                                        pic = await generateChart(data, type, symbol);
-                                        valid = true;
-                                    }
-                                    else {
-                                        let data = await fetchImperator('volume/historical/chart', { "symbol": symbol, "timeframe": tfval });
-                                        pic = await generateChart(data, type, symbol);
-                                        valid = true;
-                                    }
-                                }
+                        if (await isChartParam(symbol)) {
+                            if (symbol.includes('_')) {
+                                symbol = symbol.replace('_', '.')
                             }
-                            else {
-                                let assetcommands = await cacheGet('assetcommands');
-                                let allSymbols = "";
-                                if (assetcommands) {
-                                    assetcommands.forEach((asset) => {
-                                        allSymbols = allSymbols + asset.replace('/', '') + ', ';
-                                    });
-                                    allSymbols = allSymbols.slice(0, -2);
-                                    text = "cannot find symbol: " + command[2] + "\n\nAvailable symbols:\n<code>" + allSymbols + '</code>\n\nuse "/chart type symbol timeframe"';
+                            if (type == 'price' || type == 'p') {
+                                if (command.length >= 4) {
+                                    await bot.sendChatAction(msg.chat.id, 'typing');
+                                    let tfval = 0;
+                                    let timeframe = command[3];
+                                    if (Object.keys(tf).indexOf(timeframe) > -1) {
+                                        tfval = tf[timeframe].value;
+                                        if (symbol != 'overview' && symbol != 'o' && symbol != 'osmosis') {
+                                            let data = await fetchImperator('tokens/historical/chart', { "symbol": symbol, "timeframe": tfval });
+                                            if (data) {
+                                                pic = await generateChart(data, type, symbol);
+                                                if (pic) {
+                                                    valid = true;
+                                                }
+                                                else err = true;
+                                            }
+                                            else err = true;
+                                        }
+                                        else {
+                                            let data = await fetchImperator('tokens/historical/chart', { "symbol": 'osmo', "timeframe": tfval });
+                                            if (data) {
+                                                pic = await generateChart(data, type, symbol);
+                                                if (pic) {
+                                                    valid = true;
+                                                }
+                                                else err = true;
+                                            }
+                                            else err = true;
+                                        }
+                                    }
+                                    else {
+                                        let tfs = Object.keys(tf);
+                                        let allTfs = ""
+                                        tfs.forEach((timeframe) => {
+                                            allTfs = allTfs + timeframe + ', ';
+                                        });
+                                        allTfs = allTfs.slice(0, -2);
+                                        text = "don't know timeframe: " + command[3] + "\n\nAvailable timeframes:\n<code>" + allTfs + '</code>\n\nuse "/chart type symbol timeframe"';
+                                    }
                                 }
                                 else {
-                                    text = '<i>database not synced, please try again in a few minutes..</i>';
+                                    text = 'wrong number of arguments.\n\nuse "/chart type symbol timeframe"';
+                                }
+                            }
+                            if (type == 'liquidity' || type == 'l') {
+                                if (symbol != 'overview' && symbol != 'o' && symbol != 'osmosis') {
+                                    let data = await fetchImperator('tokens/liquidity/chart', { "symbol": symbol });
+                                    if (data) {
+                                        pic = await generateChart(data, type, symbol);
+                                        if (pic) {
+                                            valid = true;
+                                        }
+                                        else err = true;
+                                    }
+                                    else err = true;
+                                }
+                                else {
+                                    let data = await fetchImperator('liquidity/historical/chart', { "symbol": symbol });
+                                    if (data) {
+                                        pic = await generateChart(data, type, symbol);
+                                        if (pic) {
+                                            valid = true;
+                                        }
+                                        else err = true;
+                                    }
+                                    else err = true;
+                                }
+                            }
+                            else if (type == 'volume' || type == 'v') {
+                                if (symbol != 'overview' && symbol != 'o' && symbol != 'osmosis') {
+                                    let data = await fetchImperator('tokens/volume/chart', { "symbol": symbol });
+                                    if (data) {
+                                        pic = await generateChart(data, type, symbol);
+                                        if (pic) {
+                                            valid = true;
+                                        }
+                                        else err = true;
+                                    }
+                                    else err = true;
+                                }
+                                else {
+                                    let data = await fetchImperator('volume/historical/chart', { "symbol": symbol });
+                                    if (data) {
+                                        pic = await generateChart(data, type, symbol);
+                                        if (pic) {
+                                            valid = true;
+                                        }
+                                        else err = true;
+                                    }
+                                    else err = true;
                                 }
                             }
                         }
                         else {
-                            let tfs = Object.keys(tf);
-                            let allTfs = ""
-                            tfs.forEach((timeframe) => {
-                                allTfs = allTfs + timeframe + ', ';
-                            });
-                            allTfs = allTfs.slice(0, -2);
-                            text = "don't know timeframe: " + command[3] + "\n\nAvailable timeframes:\n<code>" + allTfs  + '</code>\n\nuse "/chart type symbol timeframe"';
+                            let assetcommands = await cacheGet('assetcommands');
+                            let allSymbols = "";
+                            if (assetcommands) {
+                                assetcommands.forEach((asset) => {
+                                    allSymbols = allSymbols + asset.replace('/', '') + ', ';
+                                });
+                                allSymbols = allSymbols.slice(0, -2);
+                                text = "cannot find symbol: " + command[2] + "\n\nAvailable symbols:\n<code>" + allSymbols + '</code>\n\nuse "/chart type symbol timeframe"';
+                            }
+                            else {
+                                text = '<i>database not synced, please try again in a few minutes..</i>';
+                            }
                         }
                     }
                     else {
@@ -317,7 +357,10 @@ bot.on('message', async (msg) => {
                     }
                 }
                 else {
-                    text = 'wrong number of input parameters.\n\nuse "/chart type symbol timeframe"';
+                    text = 'wrong number of arguments.\n\nuse "/chart type symbol timeframe"';
+                }
+                if (err) {
+                    text = '<i>there was an error loading the chart data, please try again later</i>';
                 }
                 if (valid) {
                     answer = await bot.sendPhoto(msg.chat.id, pic, tgOptions);
@@ -389,6 +432,7 @@ bot.onText(/\!globalban/, async (msg) => {
     return;
 });
 
+// blacklist backend (osmo admins only)
 bot.onText(/\!blacklist|!unban/, async (msg) => {
     let adm = await isAdmin(msg.from.id, config.blacklistSourceChat);
     if (adm) {
@@ -467,10 +511,26 @@ bot.on('polling_error', (e) => {
 async function userExit(msg, user) {
     users.forEach(async (cacheduser, index, arr) => {
         if (cacheduser.id == user.id) {
+            if (cacheduser.hasOwnProperty('msgid')) {
+                try {
+                    await bot.deleteMessage(cacheduser.chatid, cacheduser.msgid);
+                }
+                catch (e) {
+                    throwError(e);
+                }
+            }
+            if (user.hasOwnProperty('sticker')) {
+                try {
+                    await bot.deleteMessage(cacheduser.chatid, cacheduser.sticker);
+                }
+                catch (e) {
+                    throwError(e);
+                }
+            }
             arr.splice(index, 1);
         }
     });
-    console.log('> user exited ID: ' + user.id + ', chat: ' + msg.chat.id);
+    console.log('> user exited ID: ' + cacheduser.id + ', chat: ' + msg.chat.id);
     return true;
 }
 
