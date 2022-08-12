@@ -473,7 +473,7 @@ bot.onText(/\#/, async (msg) => {
     }
     if (msg.hasOwnProperty('entities') && config.supportCommandsActive) {
         if (msg.entities[0].type == 'hashtag') {
-            tgOptions.reply_to_message_id = msg.message_id;
+            res.tgOptions.reply_to_message_id = msg.message_id;
             msg.text = '#' + msg.text.split('#')[1];
             if (msg.text.includes(' ')) {
                 msg.text = msg.text.split(' ')[0];
@@ -483,7 +483,6 @@ bot.onText(/\#/, async (msg) => {
                 res.text = "<i>tutorial commands are restricted to admins</i>";
                 if (adm) {
                     res = await generateSupportCommandAnswer(msg);
-                    res.tgOptions.reply_to_message_id = msg.message_id;
                 }
             }
             else {
@@ -496,9 +495,6 @@ bot.onText(/\#/, async (msg) => {
                 if (res.text) {
                     await bot.sendMessage(msg.chat.id, res.text, res.tgOptions);
                 }
-            }
-            if (tgOptions.hasOwnProperty('reply_to_message_id')) {
-                delete tgOptions.reply_to_message_id;
             }
         }
     }
