@@ -534,7 +534,7 @@ async function userExit(msg, user) {
             arr.splice(index, 1);
         }
     });
-    console.log('> user exited ID: ' + cacheduser.id + ', chat: ' + msg.chat.id);
+    console.log('> user exited ID: ' + user.id + ', chat: ' + msg.chat.id);
     return true;
 }
 
