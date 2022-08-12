@@ -10,22 +10,22 @@ admin: `@clemensg` (telegram)
 
 ## commands:
 `active`
-|  command                          | description                                   |
-| --------------------------------- | --------------------------------------------- |
-`/start /help /commands /info`		| print bot info & commands						|
-`/osmosis`							| print osmosis.zone total statistics			|
-`/ibc`								| print ibc channel status (congested channels)	|
-`/assets /tokens`					| print all supported assets					|
-`/$symbol (i.e. /osmo or /atom)`	| print asset statstics							|
-`/pool $pool_number`				| print pool statistics							|
-`/apr`								| list highest apr pools & staking apr			|
-`/staking`							| pring staking statistics						|
-`/aprtoapy $apr`					| calculate APY for given APR					|
-
-`coming in v2.1`
-|  command                          | description                                   |
+|  command					            | description                                   |
 | ------------------------------------- | --------------------------------------------- |
+`/start /help /commands /info`			| print bot info & commands						|
+`/osmosis`								| print osmosis.zone total statistics			|
+`/ibc`									| print ibc channel status (congested channels)	|
+`/assets /tokens`						| print all supported assets					|
+`/$symbol (i.e. /osmo or /atom)`		| print asset statstics							|
+`/pool $pool_number`					| print pool statistics							|
+`/apr`									| list highest apr pools & staking apr			|
+`/staking`								| pring staking statistics						|
+`/aprtoapy $apr`						| calculate APY for given APR					|
 `/chart $type $symbol/$pool $timeframe` | charttypes: price, pool, osmosis				|
+
+`feature requests:`
+|  command							    | description                                   |
+| ------------------------------------- | --------------------------------------------- |
 `/validators`							| print validator stats							|
 `/validator $moniker/valoperadd`		| print validator stats for specific validator	|
 
