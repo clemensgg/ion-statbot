@@ -239,9 +239,9 @@ bot.on('message', async (msg) => {
                             if (symbol.includes('_')) {
                                 symbol = symbol.replace('_', '.')
                             }
+                            await bot.sendChatAction(msg.chat.id, 'typing');
                             if (type == 'price' || type == 'p') {
                                 if (command.length >= 4) {
-                                    await bot.sendChatAction(msg.chat.id, 'typing');
                                     let tfval = 0;
                                     let timeframe = command[3];
                                     if (Object.keys(tf).indexOf(timeframe) > -1) {
