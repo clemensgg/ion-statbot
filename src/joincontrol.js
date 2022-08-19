@@ -1,6 +1,7 @@
 import config from '../config.js'
 import { throwError } from './errors.js';
 import { bot, tgOptions } from './bot.js';
+import { getUserGreetText, generateRandomNumbers } from './helperfunctions.js';
 
 function joincontrolActive(msg) {
     var activeForThisChat = false;
@@ -93,30 +94,6 @@ async function solveAuth(cb, users) {
             return;
         });
     }
-}
-    
-
-function getUserGreetText(user) {
-    var text = "";
-    if (user.username != undefined) {
-        text = text + ' @' + user.username;
-    }
-    if (user.username == undefined) {
-        text = text + ' ' + user.first_name;
-        if (user.last_name != undefined) {
-            text = text + ' ' + user.last_name;
-        }
-    }
-    return text;
-}
-
-function generateRandomNumbers() {
-    var nums = {
-        x: Math.floor(Math.random() * 10) + 1,
-        y: Math.floor(Math.random() * 10) + 1,
-    }
-    nums.res = nums.x + nums.y;
-    return nums;
 }
 
 function keyboardYesNo(userid) {

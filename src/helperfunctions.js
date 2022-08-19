@@ -76,6 +76,29 @@ async function isChartParam(text) {
     return false;
 }
 
+function getUserGreetText(user) {
+    var text = "";
+    if (user.username != undefined) {
+        text = text + ' @' + user.username;
+    }
+    if (user.username == undefined) {
+        text = text + ' ' + user.first_name;
+        if (user.last_name != undefined) {
+            text = text + ' ' + user.last_name;
+        }
+    }
+    return text;
+}
+
+function generateRandomNumbers() {
+    var nums = {
+        x: Math.floor(Math.random() * 10) + 1,
+        y: Math.floor(Math.random() * 10) + 1,
+    }
+    nums.res = nums.x + nums.y;
+    return nums;
+}
+
 function resolveDec(symbol, amount, osmoData) {
     let res = null;
     if (osmoData) {
@@ -160,6 +183,8 @@ export {
     isActiveCommand,
     isAssetCommand,
     isMe,
+    getUserGreetText,
+    generateRandomNumbers,
     resolveDec,
     aprApy,
     fixPoolArray,

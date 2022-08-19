@@ -7,7 +7,8 @@ import {
     formatFloat,
     getFloatPrefix,
     getFloatTextSymbol,
-    emoji
+    emoji,
+    getUserGreetText
 } from './helperfunctions.js';
 import { fsReadBlacklist } from './blacklist.js';
 import Table from 'easy-table';
@@ -327,10 +328,7 @@ async function generateSupportCommandAnswer(msg) {
                     pic = command.pic;
                 }
                 else {
-                    if (text.includes(' osmosis.zone ')) {
-                        httpOptions.disable_web_page_preview = true;
-                    }
-                    else {
+                    if (!text.includes(' osmosis.zone ')) {
                         httpOptions.disable_web_page_preview = false;
                     }
                 }
@@ -378,10 +376,7 @@ async function generateBlacklistAnswer() {
     let t = new Table;
     blacklist.blacklist.forEach((user) => {
         t.cell('id', '</code><a href="tg://user?id=' + user.id + '">' + user.id + '</a><code>');
-        t.cell('name', user.username);
-        t.cell('1st', user.first_name);
-        t.cell('2nd', user.first_name);
-        t.cell('by', user.by);
+        t.cell('name', getUserGreetText(user));
         t.newRow();
     });
     text = text + '<code> ' + t.print() + '</code>\nsend <code>!unban $user_id</code> to unban';
