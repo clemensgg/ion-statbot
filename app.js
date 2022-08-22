@@ -431,6 +431,22 @@ bot.on('callback_query', async (cb) => {
                     await newGlobalBan(msg);
                     let text = 'global_banned <a href="tg://user?id=' + msg.reply_to_message.from.id + '">' + msg.reply_to_message.from.id + '</a>\n\nuser will be removed from all administrated groups within 1min!';
                     await bot.sendMessage(cb.message.chat.id, text, tgOptions);
+                    try {
+                        await bot.deleteMessage(cb.message.chat.id, cb.message.message_id);
+                    }
+                    catch (e) {
+                        throwError(e);
+                    }
+                }
+            }
+            if (cbdata[0] == 'bann') {
+                if (parseInt(cbdata[1]) == cb.from.id) {
+                    try {
+                        await bot.deleteMessage(cb.message.chat.id, cb.message.message_id);
+                    }
+                    catch (e) {
+                        throwError(e);
+                    }
                 }
             }
         }
