@@ -480,23 +480,28 @@ bot.onText(/\#/, async (msg) => {
             if (msg.text.includes(' ')) {
                 msg.text = msg.text.split(' ')[0];
             }
-            if (msg.chat.type != 'private') {
-                let adm = await isAdmin(msg.from.id, msg.chat.id);
-                res.text = "<i>tutorial commands are restricted to admins</i>";
-                if (adm) {
-                    res = await generateSupportCommandAnswer(msg);
-                }
-            }
-            else {
-                res = await generateSupportCommandAnswer(msg);
-            }
-            res.tgOptions.reply_to_message_id = msg.message_id;
-            if (res.pic) {
-                await bot.sendPhoto(msg.chat.id, res.pic, res.tgOptions);
-            }
-            else {
-                if (res.text) {
-                    await bot.sendMessage(msg.chat.id, res.text, res.tgOptions);
+            let supportCommands = await cacheGet("sp");
+            if (supportCommands) {
+                if (supportCommands.indexOf(msg.text.toLowerCase()) > -1) {
+                    if (msg.chat.type != 'private') {
+                        res.text = "<i>tutorial commands are restricted to admins</i>";
+                        let adm = await isAdmin(msg.from.id, msg.chat.id);
+                        if (adm) {
+                            res = await generateSupportCommandAnswer(msg, supportCommands);
+                        }
+                    }
+                    else {
+                        res = await generateSupportCommandAnswer(msg, supportCommands);
+                    }
+                    res.tgOptions.reply_to_message_id = msg.message_id;
+                    if (res.pic) {
+                        await bot.sendPhoto(msg.chat.id, res.pic, res.tgOptions);
+                    }
+                    else {
+                        if (res.text) {
+                            await bot.sendMessage(msg.chat.id, res.text, res.tgOptions);
+                        }
+                    }
                 }
             }
         }

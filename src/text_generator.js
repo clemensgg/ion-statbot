@@ -305,41 +305,38 @@ ${emoji.restake} like APY? <a href="https://restake.app">Compound your rewards w
     return text;
 }
 
-async function generateSupportCommandAnswer(msg) {
-    let supportCommands = await cacheGet("sp");
+async function generateSupportCommandAnswer(msg,supportCommands) {
     let pic = "";
     let text = "";
     let httpOptions = {
         "disable_web_page_preview": true,
         "parse_mode": "HTML"
     };
-    if (supportCommands) {
-        supportCommands.forEach((command) => {
-            if (msg.text == command.command.toLowerCase()) {
-                text = command.text;
-                if (command.pic) {
-                    httpOptions.caption = text;
-                    if (command.pic.includes('/file/d/')) {
-                        command.pic = 'https://docs.google.com/uc?id=' + command.pic.split('/file/d/')[1];
-                        if (command.pic.includes('/view?usp=sharing')) {
-                            command.pic = command.pic.replace('/view?usp=sharing', '');
-                        }
+    supportCommands.forEach((command) => {
+        if (msg.text == command.command.toLowerCase()) {
+            text = command.text;
+            if (command.pic) {
+                httpOptions.caption = text;
+                if (command.pic.includes('/file/d/')) {
+                    command.pic = 'https://docs.google.com/uc?id=' + command.pic.split('/file/d/')[1];
+                    if (command.pic.includes('/view?usp=sharing')) {
+                        command.pic = command.pic.replace('/view?usp=sharing', '');
                     }
-                    pic = command.pic;
                 }
-                else {
-                    if (!text.includes(' osmosis.zone ')) {
-                        httpOptions.disable_web_page_preview = false;
-                    }
+                pic = command.pic;
+            }
+            else {
+                if (!text.includes(' osmosis.zone ')) {
+                    httpOptions.disable_web_page_preview = false;
                 }
             }
-        });
-        return {
-            "text": text,
-            "pic": pic,
-            "tgOptions": httpOptions
-        };
-    }
+        }
+    });
+    return {
+        "text": text,
+        "pic": pic,
+        "tgOptions": httpOptions
+    };
     return {
         "text": "",
         "pic": "",
