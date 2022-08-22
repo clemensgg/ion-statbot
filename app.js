@@ -5,7 +5,7 @@
 import config from './config.js'
 import { cacheGet, cacheSet } from './src/cache.js';
 import { throwError } from './src/errors.js';
-import { isAdmin, isChartParam, isActiveCommand, isAssetCommand, isMe } from './src/helperfunctions.js';
+import { isAdmin, isChartParam, isActiveCommand, isAssetCommand, isMe, keyboardGlobalbanYesNo } from './src/helperfunctions.js';
 
 // init updater
 import { intervalCacheData } from './src/update.js';
@@ -388,10 +388,30 @@ bot.on('message', async (msg) => {
     return;
 });
 
-// Joincontrol solve Auth
+// Joincontrol solve Auth & globalban admin callback entrypoint
 bot.on('callback_query', async (cb) => {
-    if (cb.data.split('_')[1] == cb.from.id) {
-        await solveAuth(cb, users);
+    if (msg.chat.type == 'private') {
+    let adm = await isAdmin(cb.from.id, config.blacklistSourceChat);
+        if (adm) {
+            let cb = cb.data.split('_');
+            if (cb[0] == 'bany') {
+                if (parseInt(cb[1]) == cb.from.id) {
+                    let msg = {
+                        reply_to_message: {
+                            from: JSON.parse(cb[2])
+                        }
+                    }
+                    await newGlobalBan(msg);
+                    let text = 'global_banned <a href="tg://user?id=' + msg.reply_to_message.from.id + '">' + msg.reply_to_message.from.id + '</a>\n\nuser will be removed from all administrated groups within 1min!';
+                    await bot.sendMessage(cb.message.chat.id, text, tgOptions);
+                }
+            }
+        }
+    }
+    else {
+        if (cb.data.split('_')[1] == cb.from.id) {
+            await solveAuth(cb, users);
+        }
     }
     return;
 });
@@ -406,7 +426,8 @@ bot.onText(/\!globalban/, async (msg) => {
             if (!userToBlacklistIsAdmin) {
                 if (adm) {
                     await newGlobalBan(msg);
-                    let banned = await bot.banChatMember(msg.chat.id, msg.reply_to_message.from.id);
+                    // ban and delete all messages by user from this group
+                    let banned = await bot.banChatMember(msg.chat.id, msg.reply_to_message.from.id, 0, true);
                     if (banned) {
                         tgOptions.reply_to_message_id = msg.message_id;
                         text = 'global_banned <a href="tg://user?id=' + msg.reply_to_message.from.id + '">' + msg.reply_to_message.from.id + '</a>';
@@ -434,32 +455,52 @@ bot.onText(/\!globalban/, async (msg) => {
 
 // blacklist backend (osmo admins only)
 bot.onText(/\!blacklist|!unban/, async (msg) => {
-    let adm = await isAdmin(msg.from.id, config.blacklistSourceChat);
-    if (adm) {
-        let text = "";
-        tgOptions.reply_to_message_id = msg.message_id;
-        if (msg.text == '!blacklist') {
-            text = await generateBlacklistAnswer();
-        }
-        if (msg.text.includes('!unban')) {
-            if (msg.text.includes(' ')) {
-                let userid = msg.text.split(' ')[1];
-                let unbanned = await newGlobalUnban(userid);
-                if (unbanned) {
-                    text = 'success! unbanned <a href="tg://user?id=' + userid + '">' + userid + '</a> from all chats.\n\nblacklist updated.';
+    if (msg.chat.type == 'private') {
+        let adm = await isAdmin(msg.from.id, config.blacklistSourceChat);
+        if (adm) {
+            let text = "";
+            tgOptions.reply_to_message_id = msg.message_id;
+            if (msg.text == '!blacklist') {
+                text = await generateBlacklistAnswer();
+            }
+            if (msg.text.includes('!unban')) {
+                if (msg.text.includes(' ')) {
+                    let userid = msg.text.split(' ')[1];
+                    let unbanned = await newGlobalUnban(userid);
+                    if (unbanned) {
+                        text = 'success! unbanned <a href="tg://user?id=' + userid + '">' + userid + '</a> from all chats.\n\nblacklist updated.';
+                    }
+                    else {
+                        text = `sorry, can't find user ${userid} on the global blacklist or there was another error`;
+                    }
                 }
                 else {
-                    text = `sorry, can't find user ${userid} on the global blacklist or there was another error`;
+                    text = 'no user_id specified. please use <code>"!unban $id"</code>';
                 }
             }
-            else {
-                text = 'no user_id specified. please use <code>"!unban $id"</code>';
+            await bot.sendMessage(msg.chat.id, text, tgOptions);
+        }
+        if (tgOptions.hasOwnProperty('reply_to_message_id')) {
+            delete tgOptions.reply_to_message_id;
+        }
+    }
+    return;
+});
+
+bot.on('message', async (msg) => {
+    if (msg.chat.type == 'private') {
+        if (msg.hasOwnProperty('reply_to_message')) {
+            let adm = await isAdmin(msg.from.id, config.blacklistSourceChat);
+            if (adm) {
+                let text = "global_ban this member?";
+                tgOptions.reply_to_message_id = msg.message_id;
+                let keyboard = keyboardGlobalbanYesNo(msg.from.id, msg.reply_to_message.from);
+                tgOptions.reply_markup = keyboard;
+                await bot.sendMessage(msg.chat.id, text, tgOptions);
+                delete tgOptions.reply_to_message_id;
+                delete tgOptions.reply_markup;
             }
         }
-        await bot.sendMessage(msg.chat.id, text, tgOptions);
-    }
-    if (tgOptions.hasOwnProperty('reply_to_message_id')) {
-        delete tgOptions.reply_to_message_id;
     }
     return;
 });

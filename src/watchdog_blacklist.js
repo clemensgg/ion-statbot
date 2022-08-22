@@ -20,7 +20,8 @@ async function watchdogBlacklist() {
                 blacklist.blacklist.forEach(async (user) => {
                     let isMember = await bot.getChatMember(chat.id, user.id);
                     if (isMember.status == 'member') {
-                        await bot.banChatMember(chat.id, user.id);
+                        // ban and delete all messages by user
+                        await bot.banChatMember(chat.id, user.id, 0, true);
                         let text = 'global_banned <a href="tg://user?id=' + user.id + '">' + user.id + '</a>\n(flagged as malicious by <a href="tg://user?id=' + user.by + '">' + user.by + '</a> in chat <code>' + user.src + '</code>)';
                         await bot.sendMessage(chat.id, text, tgOptions);
                         console.log('> BLACKLIST banned user ' + user.id + ' from chat ' + chat.id + ' (source chat: ' + user.src + " / flagged by:" + user.by + ')');

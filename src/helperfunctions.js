@@ -176,6 +176,48 @@ function formatFloat(number, decimals) {
     return Math.abs(number).toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: decimals });
 }
 
+function keyboardYesNo(userid) {
+    var keyboard = {
+        inline_keyboard: [
+            [
+                {
+                    text: "YES",
+                    callback_data: "y_" + userid
+                },
+                {
+                    text: "NO",
+                    callback_data: "n_" + userid
+                },
+            ]
+        ],
+        resize_keyboard: true,
+        one_time_keyboard: true,
+        selective: true
+    }
+    return keyboard;
+}
+
+function keyboardGlobalbanYesNo(adminid, user) {
+    var keyboard = {
+        inline_keyboard: [
+            [
+                {
+                    text: "YES",
+                    callback_data: "bany_" + adminid + "_" + JSON.stringify(user)
+                },
+                {
+                    text: "NO",
+                    callback_data: "bann_" + adminid + "_" + JSON.stringify(user)
+                },
+            ]
+        ],
+        resize_keyboard: true,
+        one_time_keyboard: true,
+        selective: true
+    }
+    return keyboard;
+}
+
 export {
     emoji,
     isAdmin,
@@ -193,5 +235,7 @@ export {
     countDecimals,
     getFloatTextSymbol,
     getFloatPrefix,
-    formatFloat
+    formatFloat,
+    keyboardYesNo,
+    keyboardGlobalbanYesNo
 }

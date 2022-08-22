@@ -1,7 +1,7 @@
 import config from '../config.js'
 import { throwError } from './errors.js';
 import { bot, tgOptions } from './bot.js';
-import { getUserGreetText, generateRandomNumbers } from './helperfunctions.js';
+import { getUserGreetText, generateRandomNumbers, keyboardYesNo } from './helperfunctions.js';
 
 function joincontrolActive(msg) {
     var activeForThisChat = false;
@@ -94,27 +94,6 @@ async function solveAuth(cb, users) {
             return;
         });
     }
-}
-
-function keyboardYesNo(userid) {
-    var keyboard = {
-        inline_keyboard: [
-            [
-                {
-                    text: "YES",
-                    callback_data: "y_" + userid
-                },
-                {
-                    text: "NO",
-                    callback_data: "n_" + userid
-                },
-            ]
-        ],
-        resize_keyboard: true,
-        one_time_keyboard: true,
-        selective: true
-    }
-    return keyboard;
 }
 
 export {
