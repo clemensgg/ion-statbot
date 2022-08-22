@@ -203,11 +203,11 @@ function keyboardGlobalbanYesNo(adminid, user) {
             [
                 {
                     text: "YES",
-                    callback_data: "bany_" + adminid + "_" + JSON.stringify(user)
+                    callback_data: "bany_" + adminid + "_" + user.id + "_" + user.username + "_" + user.first_name + "_" + user.last_name
                 },
                 {
                     text: "NO",
-                    callback_data: "bann_" + adminid + "_" + JSON.stringify(user)
+                    callback_data: "bann_" + adminid + "_" + user.id + "_" + user.username + "_" + user.first_name + "_" + user.last_name
                 },
             ]
         ],

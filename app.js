@@ -129,6 +129,21 @@ bot.on('chat_member', async (msg) => {
 
 // respond to all messages
 bot.on('message', async (msg) => {
+    if (msg.chat.type == 'private') {
+        if (msg.hasOwnProperty('forward_from')) {
+            let adm = await isAdmin(msg.from.id, config.blacklistSourceChat);
+            if (adm) {
+                let text = 'global_ban <a href="tg://user?id=' + msg.forward_from.id + '">' + msg.forward_from.id + '</a>?';
+                tgOptions.reply_to_message_id = msg.message_id;
+                let keyboard = keyboardGlobalbanYesNo(msg.from.id, msg.forward_from);
+                tgOptions.reply_markup = keyboard;
+                await bot.sendMessage(msg.from.id, text, tgOptions);
+                delete tgOptions.reply_to_message_id;
+                delete tgOptions.reply_markup;
+                return;
+            }
+        }
+    }
     if (msg.hasOwnProperty('left_chat_member')) {
         let botLeftChat = await isMe(msg.left_chat_member);
         if (botLeftChat) {
@@ -390,15 +405,27 @@ bot.on('message', async (msg) => {
 
 // Joincontrol solve Auth & globalban admin callback entrypoint
 bot.on('callback_query', async (cb) => {
-    if (msg.chat.type == 'private') {
+    if (cb.message.chat.type == 'private') {
     let adm = await isAdmin(cb.from.id, config.blacklistSourceChat);
         if (adm) {
-            let cb = cb.data.split('_');
-            if (cb[0] == 'bany') {
-                if (parseInt(cb[1]) == cb.from.id) {
+            let cbdata = cb.data.split('_');
+            let user = {
+                id: parseInt(cbdata[2]),
+                username: cbdata[3],
+                first_name: cbdata[4],
+                last_name: cbdata[5],
+            }
+            if (cbdata[0] == 'bany') {
+                if (parseInt(cbdata[1]) == cb.from.id) {
                     let msg = {
                         reply_to_message: {
-                            from: JSON.parse(cb[2])
+                            from: user
+                        },
+                        from: {
+                            id: cb.from.id
+                        },
+                        chat: {
+                            id: 'priv'
                         }
                     }
                     await newGlobalBan(msg);
@@ -482,24 +509,6 @@ bot.onText(/\!blacklist|!unban/, async (msg) => {
         }
         if (tgOptions.hasOwnProperty('reply_to_message_id')) {
             delete tgOptions.reply_to_message_id;
-        }
-    }
-    return;
-});
-
-bot.on('message', async (msg) => {
-    if (msg.chat.type == 'private') {
-        if (msg.hasOwnProperty('reply_to_message')) {
-            let adm = await isAdmin(msg.from.id, config.blacklistSourceChat);
-            if (adm) {
-                let text = "global_ban this member?";
-                tgOptions.reply_to_message_id = msg.message_id;
-                let keyboard = keyboardGlobalbanYesNo(msg.from.id, msg.reply_to_message.from);
-                tgOptions.reply_markup = keyboard;
-                await bot.sendMessage(msg.chat.id, text, tgOptions);
-                delete tgOptions.reply_to_message_id;
-                delete tgOptions.reply_markup;
-            }
         }
     }
     return;

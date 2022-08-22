@@ -16,12 +16,12 @@ async function watchdogBlacklist() {
                     await blacklistNewAdmin(chat.id);
                 }
             }
-            if (chat.adm == true && chat.id != config.blacklistSourceChat.toString()) {
+            if (chat.adm == true) {
                 blacklist.blacklist.forEach(async (user) => {
                     let isMember = await bot.getChatMember(chat.id, user.id);
                     if (isMember.status == 'member') {
                         // ban and delete all messages by user
-                        await bot.banChatMember(chat.id, user.id, 0, true);
+                        await bot.banChatMember(chat.id, user.id, {}, { revoke_messages: true } );
                         let text = 'global_banned <a href="tg://user?id=' + user.id + '">' + user.id + '</a>\n(flagged as malicious by <a href="tg://user?id=' + user.by + '">' + user.by + '</a> in chat <code>' + user.src + '</code>)';
                         await bot.sendMessage(chat.id, text, tgOptions);
                         console.log('> BLACKLIST banned user ' + user.id + ' from chat ' + chat.id + ' (source chat: ' + user.src + " / flagged by:" + user.by + ')');
