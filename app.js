@@ -548,7 +548,11 @@ bot.onText(/\#/, async (msg) => {
             }
             let supportCommands = await cacheGet("sp");
             if (supportCommands) {
-                if (supportCommands.indexOf(msg.text.toLowerCase()) > -1) {
+                let cmds = [];
+                supportCommands.forEach((command) => {
+                    cmds.push(command.command);
+                });
+                if (cmds.indexOf(msg.text.toLowerCase()) > -1) {
                     if (msg.chat.type != 'private') {
                         res.text = "<i>tutorial commands are restricted to admins</i>";
                         let adm = await isAdmin(msg.from.id, msg.chat.id);
