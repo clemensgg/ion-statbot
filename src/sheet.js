@@ -15,7 +15,7 @@ async function sheetFetchSupportCommands() {
     rows.forEach((command) => {
         if (command.active == 'TRUE') {
             supportCommands.push({
-                command: command.command.toLowerCase(),
+                command: command.command,
                 active: command.active,
                 text: command.text,
                 pic: command.pic_link,

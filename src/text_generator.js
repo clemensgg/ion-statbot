@@ -313,7 +313,7 @@ async function generateSupportCommandAnswer(msg,supportCommands) {
         "parse_mode": "HTML"
     };
     supportCommands.forEach((command) => {
-        if (msg.text == command.command.toLowerCase()) {
+        if (msg.text == command.command) {
             text = command.text;
             if (command.pic) {
                 httpOptions.caption = text;

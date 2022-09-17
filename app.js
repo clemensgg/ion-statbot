@@ -212,9 +212,56 @@ bot.on('message', async (msg) => {
     }
     // respond to botcommands
     else if (msg.hasOwnProperty('entities')) {
-        tgOptions.reply_to_message_id = msg.message_id;
-        msg.text = msg.text.toLowerCase();
+        // entrypoint support commands (admin only in public groups)
+        if (msg.entities[0].type == 'hashtag') {
+            if (config.supportCommandsActive) {
+                let res = {
+                    "text": "",
+                    "pic": "",
+                    "tgOptions": {
+                        "disable_web_page_preview": true,
+                        "parse_mode": "HTML"
+                    }
+                }
+                msg.text = '#' + msg.text.split('#')[1];
+                if (msg.text.includes(' ')) {
+                    msg.text = msg.text.split(' ')[0];
+                }
+                let supportCommands = await cacheGet("sp");
+                if (supportCommands) {
+                    let cmds = [];
+                    supportCommands.forEach((command) => {
+                        cmds.push(command.command);
+                    });
+                    if (cmds.indexOf(msg.text) > -1) {
+                        if (msg.chat.type != 'private') {
+                            res.text = "<i>tutorial commands are restricted to admins</i>";
+                            let adm = await isAdmin(msg.from.id, msg.chat.id);
+                            if (adm) {
+                                res = await generateSupportCommandAnswer(msg, supportCommands);
+                            }
+                        }
+                        else {
+                            res = await generateSupportCommandAnswer(msg, supportCommands);
+                        }
+                        res.tgOptions.reply_to_message_id = msg.message_id;
+                        if (res.pic) {
+                            await bot.sendPhoto(msg.chat.id, res.pic, res.tgOptions);
+                            return;
+                        }
+                        else {
+                            if (res.text) {
+                                await bot.sendMessage(msg.chat.id, res.text, res.tgOptions);
+                                return;
+                            }
+                        }
+                    }
+                }
+            }
+        }
         if (msg.entities[0].type == 'bot_command' && msg.text.slice(0, 1) == '/') {
+            tgOptions.reply_to_message_id = msg.message_id;
+            msg.text = msg.text.toLowerCase();
             if (msg.text.includes('@')) {
                 msg.text = msg.text.split('@')[0];
             }
@@ -406,7 +453,7 @@ bot.on('message', async (msg) => {
 // Joincontrol solve Auth & globalban admin callback entrypoint
 bot.on('callback_query', async (cb) => {
     if (cb.message.chat.type == 'private') {
-    let adm = await isAdmin(cb.from.id, config.blacklistSourceChat);
+    /*let adm = await isAdmin(cb.from.id, config.blacklistSourceChat);
         if (adm) {
             let cbdata = cb.data.split('_');
             let user = {
@@ -449,7 +496,7 @@ bot.on('callback_query', async (cb) => {
                     }
                 }
             }
-        }
+        }*/
     }
     else {
         if (cb.data.split('_')[1] == cb.from.id) {
@@ -459,6 +506,7 @@ bot.on('callback_query', async (cb) => {
     return;
 });
 
+/*
 // ban user and add to global blacklist
 bot.onText(/\!globalban/, async (msg) => {
     if (msg.hasOwnProperty('reply_to_message')) {
@@ -496,6 +544,7 @@ bot.onText(/\!globalban/, async (msg) => {
     return;
 });
 
+
 // blacklist backend (osmo admins only)
 bot.onText(/\!blacklist|!unban/, async (msg) => {
     if (msg.chat.type == 'private') {
@@ -529,55 +578,7 @@ bot.onText(/\!blacklist|!unban/, async (msg) => {
     }
     return;
 });
-
-// supportcommands (admin only)
-bot.onText(/\#/, async (msg) => {
-    let res = {
-        "text": "",
-        "pic": "",
-        "tgOptions": {
-            "disable_web_page_preview": true,
-            "parse_mode": "HTML"
-        }
-    }
-    if (msg.hasOwnProperty('entities') && config.supportCommandsActive) {
-        if (msg.entities[0].type == 'hashtag') {
-            msg.text = '#' + msg.text.split('#')[1];
-            if (msg.text.includes(' ')) {
-                msg.text = msg.text.split(' ')[0];
-            }
-            let supportCommands = await cacheGet("sp");
-            if (supportCommands) {
-                let cmds = [];
-                supportCommands.forEach((command) => {
-                    cmds.push(command.command);
-                });
-                if (cmds.indexOf(msg.text.toLowerCase()) > -1) {
-                    if (msg.chat.type != 'private') {
-                        res.text = "<i>tutorial commands are restricted to admins</i>";
-                        let adm = await isAdmin(msg.from.id, msg.chat.id);
-                        if (adm) {
-                            res = await generateSupportCommandAnswer(msg, supportCommands);
-                        }
-                    }
-                    else {
-                        res = await generateSupportCommandAnswer(msg, supportCommands);
-                    }
-                    res.tgOptions.reply_to_message_id = msg.message_id;
-                    if (res.pic) {
-                        await bot.sendPhoto(msg.chat.id, res.pic, res.tgOptions);
-                    }
-                    else {
-                        if (res.text) {
-                            await bot.sendMessage(msg.chat.id, res.text, res.tgOptions);
-                        }
-                    }
-                }
-            }
-        }
-    }
-    return;
-});
+*/
 
 // log polling errors
 bot.on('polling_error', (e) => {
@@ -686,10 +687,10 @@ async function main() {
 
         setInterval(watchdogAutodelete, 20000);
         setInterval(watchdogJoincontrol, 20000);
-        setInterval(watchdogBlacklist, 20000);
+        // setInterval(watchdogBlacklist, 20000);
         watchdogAutodelete();
         watchdogJoincontrol();
-        watchdogBlacklist(),
+        // watchdogBlacklist(),
             
         setInterval(intervalCacheData, config.pollInterval * 1000);
         intervalCacheData();
