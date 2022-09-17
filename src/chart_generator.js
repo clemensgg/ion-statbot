@@ -40,7 +40,11 @@ function getCol(value) {
 
 function getMinMove(size) {
 	var s = 1 + "";
-	while (s.length < size) s = "0" + s;
+	let len = s.length;
+	while (len < size) {
+		s = "0" + s;
+		len = s.length;
+	}
 	return parseFloat('0.' + s);
 }
 
@@ -57,6 +61,7 @@ function nFormatter(num) {
 }
 
 function getPriceFormat(value) {
+	if (value == 0) value = 0.0000000000001;
 	if (value > 10000) return { type: 'price', precision: 0, minMove: 10 }
 	else if (value <= 10000 && value > 10) return { type: 'price', precision: 1, minMove: getMinMove(1)  }
 	else if (value <= 1) {
