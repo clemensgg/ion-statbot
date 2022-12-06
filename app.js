@@ -230,19 +230,27 @@ bot.on('message', async (msg) => {
                 let supportCommands = await cacheGet("sp");
                 if (supportCommands) {
                     let cmds = [];
+                    let cmdstext = "";
                     supportCommands.forEach((command) => {
                         cmds.push(command.command);
+                        cmdstext = cmdstext + command.command + ", ";
                     });
-                    if (cmds.indexOf(msg.text) > -1) {
-                        if (msg.chat.type != 'private') {
-                            res.text = "<i>tutorial commands are restricted to admins</i>";
-                            let adm = await isAdmin(msg.from.id, msg.chat.id);
-                            if (adm) {
-                                res = await generateSupportCommandAnswer(msg, supportCommands);
-                            }
+                    cmdstext = cmdstext.slice(0, -2);
+                    if (cmds.indexOf(msg.text) > -1 || msg.text == '#listcommands') {
+                        if (msg.text == '#listcommands') {
+                            res.text = cmdstext;
                         }
                         else {
-                            res = await generateSupportCommandAnswer(msg, supportCommands);
+                            if (msg.chat.type != 'private') {
+                                res.text = "<i>tutorial commands are restricted to admins</i>";
+                                let adm = await isAdmin(msg.from.id, msg.chat.id);
+                                if (adm) {
+                                    res = await generateSupportCommandAnswer(msg, supportCommands);
+                                }
+                            }
+                            else {
+                                res = await generateSupportCommandAnswer(msg, supportCommands);
+                            }
                         }
                         res.tgOptions.reply_to_message_id = msg.message_id;
                         if (res.pic) {
