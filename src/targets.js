@@ -7,9 +7,9 @@ import { throwError } from './errors.js';
 
 
 async function resolveOsmoStakingStats() {
-    let res = await fetchOsmoLCD('/validatorsets/latest');
-    let totalVals = parseInt(res.result.total);
-    res = await fetchOsmoLCD('/cosmos/bank/v1beta1/supply/uosmo');
+    let res = await fetchOsmoLCD('/cosmos/staking/v1beta1/params');
+    let totalVals = parseInt(res.params.max_validators);
+    res = await fetchOsmoLCD('/cosmos/bank/v1beta1/supply_without_offset/uosmo');
     let osmoSupply = parseInt(res.amount.amount);
     let totalBonded = 0;
     let nextKey = "";
@@ -27,7 +27,7 @@ async function resolveOsmoStakingStats() {
             totalBonded = totalBonded + parseInt(validator.delegator_shares);
         }
     });
-    let lastBlock = await fetchOsmoLCD('/blocks/latest');
+    let lastBlock = await fetchOsmoLCD('/cosmos/base/tendermint/v1beta1/blocks/latest');
     lastBlock = lastBlock.block;
     return {
         "latestBlockHeight": lastBlock.header.height,
@@ -58,18 +58,18 @@ async function runOsmoLCDhealthCheck() {
     let caughtUp = false;
     let syncing = null;
     let lastBlock = {};
-    let res = await fetchOsmoLCD('/syncing');
+    let res = await fetchOsmoLCD('/cosmos/base/tendermint/v1beta1/syncing');
     if (!res) {
         console.log("OsmoLCD ERROR!");
     }
     else {
         console.log("> OsmoLCD responding");
-        syncing = res;
+        syncing = res.syncing;
         if (!syncing) {
             caughtUp = true;
         }
     }
-    res = await fetchOsmoLCD('/blocks/latest');
+    res = await fetchOsmoLCD('/cosmos/base/tendermint/v1beta1/blocks/latest');
     if (res) {
         lastBlock = res;
         return {
