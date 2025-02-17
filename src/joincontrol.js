@@ -16,7 +16,7 @@ function joincontrolActive(msg) {
 async function authA(newMember, chatId) {
     var nums = generateRandomNumbers();
     var text = '<b>(' + nums.x + ' + ' + nums.y + ')</b> ' + getUserGreetText(newMember);
-    text = text + ', please send the solution to the arithmetic operation provided at the beginning of this message within ' + config.joinControl.timeout + ' sec, otherwise you will be kicked.\n\n<i><a href="' + config.ccStakeWithUsUrl + '">powered by CryptoCrew Validators</a></i>';
+    text = text + ', please send the solution to the equation provided at the beginning of this message within ' + config.joinControl.timeout + ' sec, otherwise you will be kicked.\n\n<i><a href="' + config.ccStakeWithUsUrl + '">powered by CryptoCrew Validators</a></i>';
     try {
         var sent = await bot.sendMessage(chatId, text, tgOptions);
     }
